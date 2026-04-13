@@ -14,7 +14,7 @@ def _serialize_row(row):
         return None
     result = dict(row)
     for key, value in result.items():
-        if hasattr(value, 'isoformat'):
+        if hasattr(value, "isoformat"):
             result[key] = value.isoformat()
     return result
 
