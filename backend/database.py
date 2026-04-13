@@ -4,21 +4,13 @@ Database helper module for the Campus Event Planner.
 Provides MySQL connection management and schema initialization.
 """
 
-import os
+from config.config import get_app_db_config
 import mysql.connector
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "127.0.0.1"),
-    "port": int(os.environ.get("DB_PORT", "3306")),
-    "user": os.environ.get("DB_USER", "app"),
-    "password": os.environ.get("DB_PASSWORD", "devpass"),
-    "database": os.environ.get("DB_NAME", "campus_events"),
-}
-
-print(DB_CONFIG)
+DB_CONFIG = get_app_db_config()
 
 
 def get_db():

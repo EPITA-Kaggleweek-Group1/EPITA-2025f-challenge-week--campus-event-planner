@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS campus_events;
+CREATE DATABASE IF NOT EXISTS campus_events_test;
