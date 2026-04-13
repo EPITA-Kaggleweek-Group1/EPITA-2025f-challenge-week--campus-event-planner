@@ -1,3 +1,11 @@
+# Team members
+Muhammad Danish JAVED
+Huizhe SU
+Tien Anh BUI
+Ibrahim JAREKJI
+
+---
+
 # Campus Event Planner
 
 A mobile application for browsing, searching, and registering for campus events. Built with a Python/Flask + MySQL backend and native Android (Java) or iOS (Swift) frontends.
