@@ -166,6 +166,7 @@ def seed():
 
 def seed_users():
     import hashlib
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""

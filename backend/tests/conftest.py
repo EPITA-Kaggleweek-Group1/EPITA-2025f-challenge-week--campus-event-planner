@@ -6,12 +6,17 @@ Creates a temporary MySQL test database for each test session.
 
 import os
 import sys
+from config.config import get_test_db_config
 import pytest
 import mysql.connector
+from dotenv import load_dotenv
+
+load_dotenv()
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 TEST_DB_NAME = "test_campus_events"
+TEST_DB_CONFIG = get_test_db_config()
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +28,7 @@ def test_db():
     import database
 
     # Create the test database
-    config_no_db = {k: v for k, v in database.DB_CONFIG.items() if k != "database"}
+    config_no_db = {k: v for k, v in TEST_DB_CONFIG.items() if k != "database"}
     conn = mysql.connector.connect(**config_no_db)
     cursor = conn.cursor()
     cursor.execute(f"DROP DATABASE IF EXISTS {TEST_DB_NAME}")
@@ -32,7 +37,7 @@ def test_db():
     conn.close()
 
     # Point the app at the test database
-    database.DB_CONFIG["database"] = TEST_DB_NAME
+    TEST_DB_CONFIG["database"] = TEST_DB_NAME
     database.init_db()
 
     # Insert seed events
@@ -43,14 +48,26 @@ def test_db():
         INSERT INTO events (title, description, date, location, capacity)
         VALUES (%s, %s, %s, %s, %s)
         """,
-        ("Test Event 1", "Description for test event 1", "2026-04-15T10:00:00", "Room 101", 50),
+        (
+            "Test Event 1",
+            "Description for test event 1",
+            "2026-04-15T10:00:00",
+            "Room 101",
+            50,
+        ),
     )
     cursor.execute(
         """
         INSERT INTO events (title, description, date, location, capacity)
         VALUES (%s, %s, %s, %s, %s)
         """,
-        ("Test Event 2", "Description for test event 2", "2026-04-20T14:00:00", "Room 202", 30),
+        (
+            "Test Event 2",
+            "Description for test event 2",
+            "2026-04-20T14:00:00",
+            "Room 202",
+            30,
+        ),
     )
     db.commit()
     cursor.close()
