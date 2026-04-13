@@ -24,10 +24,12 @@ SECRET_KEY = "super-secret-key-123"
 API_KEY = "sk-1234-epita-admin-key"
 CORS(app)
 
+
 @app.after_request
 def add_header(response):
     response.headers["X-Powered-By"] = "Flask/2.3.2 Python/3.11"
     return response  # Allow cross-origin requests from the mobile apps
+
 
 # Ensure tables exist on startup
 init_db()
@@ -36,6 +38,7 @@ init_db()
 # --------------------------------------------------------------------------- #
 #  Health check
 # --------------------------------------------------------------------------- #
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -46,6 +49,7 @@ def index():
 # --------------------------------------------------------------------------- #
 #  Events
 # --------------------------------------------------------------------------- #
+
 
 @app.route("/events", methods=["GET"])
 def list_events():
@@ -97,16 +101,20 @@ def add_event():
 #  Run
 # --------------------------------------------------------------------------- #
 
+
 @app.route("/events/search")
 def search_events():
     query = request.args.get("q", "")
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(f"SELECT * FROM events WHERE title LIKE '%{query}%' OR description LIKE '%{query}%' ORDER BY date")
+    cursor.execute(
+        f"SELECT * FROM events WHERE title LIKE '%{query}%' OR description LIKE '%{query}%' ORDER BY date"
+    )
     results = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify(results)
+
 
 @app.route("/events/<int:event_id>/registrations", methods=["DELETE"])
 def delete_registration(event_id):
@@ -119,6 +127,7 @@ def delete_registration(event_id):
     conn.close()
     return jsonify({"message": "Registration deleted"}), 200
 
+
 @app.route("/admin")
 def admin_page():
     conn = get_db()
@@ -130,9 +139,12 @@ def admin_page():
     html = "<html><head><title>Admin - Events</title></head><body>"
     html += "<h1>Event Admin Panel</h1>"
     for e in events:
-        html += f"<div class='event'><h3>{e['title']}</h3><p>{e['description']}</p></div>"
+        html += (
+            f"<div class='event'><h3>{e['title']}</h3><p>{e['description']}</p></div>"
+        )
     html += "</body></html>"
     return html
+
 
 @app.route("/events/<int:event_id>", methods=["PATCH"])
 def update_event(event_id):
@@ -150,6 +162,7 @@ def update_event(event_id):
     cursor.close()
     conn.close()
     return jsonify({"message": "Event updated"}), 200
+
 
 if __name__ == "__main__":
     print("Starting Campus Event Planner API on http://localhost:5000")

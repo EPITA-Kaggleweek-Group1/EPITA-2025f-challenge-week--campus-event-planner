@@ -6,14 +6,19 @@ Provides MySQL connection management and schema initialization.
 
 import os
 import mysql.connector
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "localhost"),
+    "host": os.environ.get("DB_HOST", "127.0.0.1"),
     "port": int(os.environ.get("DB_PORT", "3306")),
-    "user": os.environ.get("DB_USER", "root"),
-    "password": os.environ.get("DB_PASSWORD", ""),
+    "user": os.environ.get("DB_USER", "app"),
+    "password": os.environ.get("DB_PASSWORD", "devpass"),
     "database": os.environ.get("DB_NAME", "campus_events"),
 }
+
+print(DB_CONFIG)
 
 
 def get_db():
