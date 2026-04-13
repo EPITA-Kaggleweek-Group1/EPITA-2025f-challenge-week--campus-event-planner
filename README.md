@@ -1,8 +1,8 @@
 # Team members
-Muhammad Danish JAVED
-Huizhe SU
-Tien Anh BUI
-Ibrahim JAREKJI
+- Muhammad Danish JAVED
+- Huizhe SU
+- Tien Anh BUI
+- Ibrahim JAREKJI
 
 ---
 
