@@ -1,7 +1,27 @@
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+_loaded = False
+
+
+def load_env():
+    global _loaded
+    if _loaded:
+        return
+
+    current = Path(__file__).resolve()
+
+    for parent in current.parents:
+        env_file = parent / ".env"
+        if env_file.exists():
+            load_dotenv(env_file)
+            _loaded = True
+            break
 
 
 def get_app_db_config():
+    load_env()
     return {
         "host": os.getenv("DB_HOST", "127.0.0.1"),
         "port": int(os.getenv("DB_PORT", "3306")),
@@ -12,6 +32,7 @@ def get_app_db_config():
 
 
 def get_test_db_config():
+    load_env()
     return {
         "host": os.getenv("DB_HOST", "127.0.0.1"),
         "port": int(os.getenv("DB_PORT", "3306")),
