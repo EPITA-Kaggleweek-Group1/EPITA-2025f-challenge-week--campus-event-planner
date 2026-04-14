@@ -11,6 +11,18 @@ from mysql.connector.types import RowItemType
 from database import get_db
 
 
+class EventFullError(Exception):
+    pass
+
+
+class EventNotFoundError(Exception):
+    pass
+
+
+class AlreadyRegisteredError(Exception):
+    pass
+
+
 def _serialize_row(row):
     """Convert datetime objects in a row dict to strings for JSON serialization."""
     if row is None:
@@ -116,3 +128,36 @@ def registration_get_all(event_id: int):
     cursor.close()
     conn.close()
     return [_serialize_row(r) for r in registrations]
+
+
+def registration_create(conn, event_id, data):
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id, capacity FROM events WHERE id = %s", (event_id,))
+    event = cursor.fetchone()
+    if not event:
+        raise EventNotFoundError()
+    try:
+        cursor.execute(
+            """
+            INSERT INTO registrations (event_id, user_name, email)
+            VALUES (%s, %s, %s)
+        """,
+            (event_id, data["user_name"], data["email"]),
+        )
+
+        conn.commit()
+
+        new_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM registrations WHERE id = %s", (new_id,))
+        registration = _serialize_row(cursor.fetchone())
+
+        return registration
+
+    except Exception as e:
+        if "Duplicate entry" in str(e):
+            raise AlreadyRegisteredError()
+        raise
+
+    finally:
+        cursor.close()

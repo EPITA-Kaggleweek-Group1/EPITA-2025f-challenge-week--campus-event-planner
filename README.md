@@ -125,7 +125,9 @@ Health check.
 { "message": "Campus Event Planner API is running" }
 ```
 
-### `GET /events`
+### Events
+
+#### `GET /events`
 
 List all events ordered by date.
 
@@ -145,14 +147,14 @@ List all events ordered by date.
 ]
 ```
 
-### `GET /events/<id>`
+#### `GET /events/<id>`
 
 Single event by ID.
 
 **Response** `200` — event object (same shape as above)
 **Response** `404` — `{ "error": "Event not found" }`
 
-### `POST /events`
+#### `POST /events`
 
 Create a new event.
 
@@ -171,6 +173,31 @@ Create a new event.
 **Response** `201` — the created event object
 **Response** `400` — if `title` or `date` is missing
 
+### Registration
+
+#### GET /events/<id>/registration
+
+List all the registrations related to one event.
+
+**Response** `200` - the list of registrations
+**Response** `404` - the event does not exist
+
+#### POST /events/<id>/register
+
+Create a new registration
+
+**Request body** (JSON):
+```json
+{
+  "user_name": "User Name",
+  "email": "email@example.com"
+}
+```
+
+**Response** `201` - The created registration.
+**Response** `400` - If the request is not valid.
+**Response** `404` - If the event is not presented.
+**Response** `409` - If the user already registered.
 ---
 
 ## Student TODOs

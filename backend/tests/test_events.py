@@ -9,6 +9,19 @@ import json
 import pytest
 from werkzeug.wrappers import response
 
+from reset_db import reset_db
+from seed import seed_users, seed
+
+
+# TODO: We need more finegrained test cases fixture.
+# Or rollback each time.
+@pytest.fixture(autouse=True)
+def setup_db():
+    reset_db()
+    seed()
+    seed_users()
+    yield
+
 
 # ------------------------------------------------------------------ #
 #  Passing tests — features that already work
@@ -115,7 +128,6 @@ class TestRegistration:
         data = response.get_json()
         assert "error" in data
 
-    @pytest.mark.xfail(reason="Registration endpoint not implemented yet")
     def test_register_for_event(self, client):
         """POST /events/<id>/register should create a registration."""
         payload = {
@@ -131,6 +143,94 @@ class TestRegistration:
         data = response.get_json()
         assert data["user_name"] == "Alice Dupont"
         assert data["event_id"] == 1
+
+    def test_register_event_not_found(self, client):
+        payload = {
+            "user_name": "Alice",
+            "email": "alice@test.com",
+        }
+
+        response = client.post(
+            "/events/999/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+        assert response.get_json()["error"] == "Event not found"
+
+    def test_register_missing_fields(self, client):
+        payload = {
+            "user_name": "Alice"
+            # missing email
+        }
+        response = client.post(
+            "/events/1/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+
+    def test_register_empty_body(self, client):
+        response = client.post(
+            "/events/1/register",
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+
+    def test_register_duplicate(self, client):
+        payload = {
+            "user_name": "Alice",
+            "email": "alice@test.com",
+        }
+
+        # first request
+        r1 = client.post(
+            "/events/1/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        assert r1.status_code == 201
+
+        # duplicate
+        r2 = client.post(
+            "/events/1/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert r2.status_code == 409
+        assert "already" in r2.get_json()["error"].lower()
+
+    def test_user_can_register_multiple_events(self, client):
+        payload = {
+            "user_name": "Alice",
+            "email": "alice@test.com",
+        }
+
+        # register event 1
+        r1 = client.post(
+            "/events/1/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert r1.status_code == 201
+
+        # register event 2
+        r2 = client.post(
+            "/events/2/register",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert r2.status_code == 201
+
+        data = r2.get_json()
+        assert data["event_id"] == 2
 
     @pytest.mark.xfail(reason="Registrations count endpoint not implemented yet")
     def test_registrations_count(self, client):

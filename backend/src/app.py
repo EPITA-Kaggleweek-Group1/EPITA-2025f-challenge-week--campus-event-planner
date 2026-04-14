@@ -16,7 +16,15 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from database import init_db, get_db
-from models import get_all_events, get_event_by_id, create_event, registration_get_all
+from models import (
+    AlreadyRegisteredError,
+    EventNotFoundError,
+    get_all_events,
+    get_event_by_id,
+    create_event,
+    registration_create,
+    registration_get_all,
+)
 
 app = Flask(__name__)
 app.secret_key = "changeme"
@@ -89,12 +97,6 @@ def add_event():
     return jsonify(event), 201
 
 
-# --------------------------------------------------------------------------- #
-#  Registrations — NOT IMPLEMENTED
-#  Students must create endpoints here:
-#    POST /events/<id>/register
-#    GET  /events/<id>/registrations
-# --------------------------------------------------------------------------- #
 @app.route("/events/<int:event_id>/registrations", methods=["GET"])
 def get_event_registrations(event_id: int):
     """
@@ -109,6 +111,38 @@ def get_event_registrations(event_id: int):
         return jsonify({"error": "Event not found"}), 404
 
     return jsonify(registrations), 200
+
+
+@app.route("/events/<int:event_id>/register", methods=["POST"])
+def add_event_registration(event_id: int):
+    """
+    Create a new register.
+
+    Expects JSON body with at least 'email' and 'user_name'.
+    Returns
+    201 - The created registration.
+    400 - If the request is not valid.
+    404 - If the event is not presented.
+    409 - If the user already registered.
+    """
+    conn = get_db()
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Request body must be JSON"}), 400
+        if "user_name" not in data or "email" not in data:
+            return jsonify({"error": "'user_name' and 'email' are required"}), 400
+
+        result = registration_create(conn, event_id, data)
+        return jsonify(result), 201
+    except EventNotFoundError:
+        return jsonify({"error": "Event not found"}), 404
+    except AlreadyRegisteredError:
+        return jsonify({"error": "Registration already exist"}), 409
+    except Exception:
+        return jsonify({"error": "Internal server error"}), 500
+    finally:
+        conn.close()
 
 
 # --------------------------------------------------------------------------- #
