@@ -253,3 +253,26 @@ class TestSearch:
         # All returned events should contain 'Test' in the title
         for event in data:
             assert "test" in event["title"].lower()
+
+    def test_event_search_sql_inject_97(self, client):
+        """
+        This is a security problem reported on
+        https://github.com/EPITA-Kaggleweek-Group1/EPITA-2025f-challenge-week--campus-event-planner/issues/97
+        GET /events/search?q=%' UNION SELECT table_name,2,3,4,5,6,7,8 FROM information_schema.tables-- -
+        """
+
+        response = client.get(
+            "/events/search?q=%' UNION SELECT table_name,2,3,4,5,6,7,8 FROM information_schema.tables-- -"
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 0  # No result shoule be there
+
+        response = client.get(
+            "/events/search?q=%' UNION SELECT user_name,email,3,4,5,6,7,8 FROM registrations-- -"
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 0  # There is no registration yet.
