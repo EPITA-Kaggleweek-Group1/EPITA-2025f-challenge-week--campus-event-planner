@@ -55,6 +55,9 @@ def init_db():
         )
     """)
 
+    # Please refer to https://dev.mysql.com/doc/refman/8.0/en/create-table-foreign-keys.html
+    # for ON DELETE CASCADE
+    # We add UNIQUE KEY so that each user could only register once for one event
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS registrations (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +65,9 @@ def init_db():
             user_name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (event_id) REFERENCES events(id)
+            INDEX idx_event_id (event_id),
+            UNIQUE KEY unique_event_email (event_id, email),
+            FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
         )
     """)
 
