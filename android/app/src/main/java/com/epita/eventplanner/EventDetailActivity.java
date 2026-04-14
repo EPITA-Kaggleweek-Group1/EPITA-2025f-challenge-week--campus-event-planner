@@ -1,35 +1,98 @@
 package com.epita.eventplanner;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.epita.eventplanner.api.ApiClient;
+import com.epita.eventplanner.model.Event;
+
+import org.json.JSONObject;
+
 /**
  * Detail screen for a single event.
- *
- * The layout is already wired up with placeholder TextViews, but this
- * activity does NOT yet fetch data from the API.
- *
- * TODO (students):
- *   1. Read the "event_id" extra from the Intent
- *   2. Call GET /events/<id> via ApiClient.fetchJson()
- *   3. Parse the JSON and populate the TextViews
- *   4. Display a formatted date (e.g. "Saturday 18 April 2026 at 17:00")
- *   5. Show remaining spots (requires GET /events/<id>/registrations)
- *   6. Add a "Register" button that calls POST /events/<id>/register
+ * Implements TODO 1: Fetching specific event data on load.
  */
 public class EventDetailActivity extends AppCompatActivity {
+
+    private static final String TAG = "EventDetailActivity";
+
+    // UI References based on your activity_event_detail.xml
+    private TextView detailTitle;
+    private TextView detailDate;
+    private TextView detailLocation;
+    private TextView detailCapacity;
+    private TextView detailDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        // The event_id is passed via the Intent — students will use this
+        // 1. Initialize the views from your layout
+        detailTitle = findViewById(R.id.detailTitle);
+        detailDate = findViewById(R.id.detailDate);
+        detailLocation = findViewById(R.id.detailLocation);
+        detailCapacity = findViewById(R.id.detailCapacity);
+        detailDescription = findViewById(R.id.detailDescription);
+
+        // 2. Read the "event_id" extra passed from MainActivity
         int eventId = getIntent().getIntExtra("event_id", -1);
 
-        // TODO: fetch event details and populate the UI
-        // For now, show the placeholder layout only.
+        if (eventId != -1) {
+            // 3. Call GET /events/<id> via ApiClient
+            loadEventDetails(eventId);
+        } else {
+            Toast.makeText(this, "Error: Event ID not found", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    /**
+     * Fetches event details from the backend on a background thread.
+     */
+    private void loadEventDetails(int id) {
+        new Thread(() -> {
+            try {
+                // Execute the network request
+                String jsonResponse = ApiClient.fetchJson("/events/" + id);
+
+                // Parse the JSON into an Event object using your model's factory
+                JSONObject jsonObject = new JSONObject(jsonResponse);
+                Event event = Event.fromJson(jsonObject);
+
+                // 4. Update the UI on the main thread
+                runOnUiThread(() -> populateUI(event));
+
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load event details", e);
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Failed to load event details", Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
+    }
+
+    /**
+     * Populates the TextViews with data from the Event object.
+     */
+    private void populateUI(Event event) {
+        detailTitle.setText(event.getTitle());
+        detailLocation.setText(event.getLocation());
+        detailDescription.setText(event.getDescription());
+
+        // Display capacity
+        detailCapacity.setText("Capacity: " + event.getCapacity());
+
+        // Format date (For now using raw string, you can add a formatter later)
+        detailDate.setText(event.getDate());
+
+        // Set the Activity Title to the Event Name for better UX
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(event.getTitle());
+        }
     }
 }
