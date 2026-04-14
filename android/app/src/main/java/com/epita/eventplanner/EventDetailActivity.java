@@ -1,10 +1,10 @@
 package com.epita.eventplanner;
 
 import android.os.Bundle;
+import android.util.Patterns; // For email validation
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
@@ -56,23 +58,59 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void showRegisterDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_register, null);
-        EditText editName = dialogView.findViewById(R.id.editName);
-        EditText editEmail = dialogView.findViewById(R.id.editEmail);
 
-        new AlertDialog.Builder(this)
+        // References to Layouts (for showing errors) and Edits (for getting text)
+        TextInputLayout layoutName = dialogView.findViewById(R.id.layoutName);
+        TextInputLayout layoutEmail = dialogView.findViewById(R.id.layoutEmail);
+        TextInputEditText editName = dialogView.findViewById(R.id.editName);
+        TextInputEditText editEmail = dialogView.findViewById(R.id.editEmail);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Register")
                 .setView(dialogView)
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    String name = editName.getText().toString();
-                    String email = editEmail.getText().toString();
-                    if (!name.isEmpty() && !email.isEmpty()) {
-                        submitRegistration(name, email);
-                    } else {
-                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                    }
-                })
+                .setPositiveButton("Submit", null) // Set to null first to override closing behavior
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String name = editName.getText().toString().trim();
+                String email = editEmail.getText().toString().trim();
+
+                boolean isValid = true;
+
+                // 1. Validate Name
+                if (name.isEmpty()) {
+                    layoutName.setError("Name is required");
+                    isValid = false;
+                } else if (name.length() < 2) {
+                    layoutName.setError("Name is too short");
+                    isValid = false;
+                } else {
+                    layoutName.setError(null);
+                }
+
+                // 2. Validate Email
+                if (email.isEmpty()) {
+                    layoutEmail.setError("Email is required");
+                    isValid = false;
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    layoutEmail.setError("Invalid email format");
+                    isValid = false;
+                } else {
+                    layoutEmail.setError(null);
+                }
+
+                // 3. Submit if valid
+                if (isValid) {
+                    submitRegistration(name, email);
+                    dialog.dismiss();
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private void submitRegistration(String name, String email) {
