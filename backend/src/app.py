@@ -16,7 +16,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from database import init_db, get_db
-from models import get_all_events, get_event_by_id, create_event
+from models import get_all_events, get_event_by_id, create_event, registration_get_all
 
 app = Flask(__name__)
 app.secret_key = "changeme"
@@ -95,6 +95,20 @@ def add_event():
 #    POST /events/<id>/register
 #    GET  /events/<id>/registrations
 # --------------------------------------------------------------------------- #
+@app.route("/events/<int:event_id>/registrations", methods=["GET"])
+def get_event_registrations(event_id: int):
+    """
+    Return a list of registrations based on event ID.
+
+    Returns:
+    200 - Success. A list of the registrations.
+    404 - If the event does not exist.
+    """
+    registrations = registration_get_all(event_id)
+    if registrations is None:
+        return jsonify({"error": "Event not found"}), 404
+
+    return jsonify(registrations), 200
 
 
 # --------------------------------------------------------------------------- #

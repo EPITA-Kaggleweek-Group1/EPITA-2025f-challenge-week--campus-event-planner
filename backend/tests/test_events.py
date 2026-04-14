@@ -7,6 +7,7 @@ features have not been implemented yet. Students must make these tests pass.
 
 import json
 import pytest
+from werkzeug.wrappers import response
 
 
 # ------------------------------------------------------------------ #
@@ -100,6 +101,19 @@ class TestCreateEvent:
 
 class TestRegistration:
     """Registration endpoints (NOT YET IMPLEMENTED)."""
+
+    def test_return_empty_list_if_no_registration(self, client):
+        response = client.get("/events/1/registrations")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) == 0  # There is no registration yet.
+
+    def test_return_not_found_if_event_not_exist(self, client):
+        response = client.get("/events/9999/registrations")
+        assert response.status_code == 404
+        data = response.get_json()
+        assert "error" in data
 
     @pytest.mark.xfail(reason="Registration endpoint not implemented yet")
     def test_register_for_event(self, client):
