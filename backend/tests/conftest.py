@@ -9,9 +9,7 @@ import sys
 from config.config import get_test_db_config
 import pytest
 import mysql.connector
-from dotenv import load_dotenv
 
-load_dotenv()
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 

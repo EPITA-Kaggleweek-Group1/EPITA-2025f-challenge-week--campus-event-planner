@@ -6,9 +6,7 @@ Provides MySQL connection management and schema initialization.
 
 from config.config import get_app_db_config
 import mysql.connector
-from dotenv import load_dotenv
 
-load_dotenv()
 
 DB_CONFIG = get_app_db_config()
 
