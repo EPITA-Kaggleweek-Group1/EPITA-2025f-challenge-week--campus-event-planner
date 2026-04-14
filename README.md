@@ -48,6 +48,9 @@ This is a **challenge week project** (~60% complete). The backend API is functio
 cd backend
 # Make sure you have docker compose installed and docker server running
 docker compose up
+
+# For fist time running, you might want to seed the database
+python src/seed.py
 ```
 
 ## Quick Start — Backend
@@ -57,22 +60,14 @@ Please do not commit `.env` to the repository.
 
 ```bash
 cd backend
+# make sure you have docker installed, and server running.
+docker compose up
 
-# 1. Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-# Fish: bass source venv/bin/activate
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Make sure MySQL is running and create the database
-# (the seed script will create it automatically)
-python seed.py
-
-# 4. Start the API server
-python app.py
+# If you want seed data
+docker compose exec app python src/seed.py
 ```
+
+Please wait for 30s, so that the MySQL will be correctly set up.
 
 The API is now running at **http://localhost:5000**. Verify with:
 

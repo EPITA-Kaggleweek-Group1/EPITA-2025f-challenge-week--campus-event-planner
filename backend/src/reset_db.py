@@ -1,8 +1,11 @@
-from database import get_db
+from config.config import get_app_db_config
+from database import Database
+
+db = Database(get_app_db_config())
 
 
 def reset_db():
-    conn = get_db()
+    conn = db.get_admin_connection()
     cursor = conn.cursor()
 
     cursor.execute("SET FOREIGN_KEY_CHECKS = 0")

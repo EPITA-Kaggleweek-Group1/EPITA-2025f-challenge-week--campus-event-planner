@@ -8,7 +8,6 @@ plain dictionaries ready for JSON serialization.
 from typing import List
 
 from mysql.connector.types import RowItemType
-from database import get_db
 
 
 class EventFullError(Exception):
@@ -34,14 +33,13 @@ def _serialize_row(row):
     return result
 
 
-def get_all_events() -> List[dict[str, RowItemType] | None]:
+def get_all_events(conn) -> List[dict[str, RowItemType] | None]:
     """
     Retrieve every event, ordered by date ascending.
 
     Returns:
         list[dict]: A list of event dictionaries.
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM events ORDER BY date ASC")
     rows = cursor.fetchall()
@@ -50,7 +48,7 @@ def get_all_events() -> List[dict[str, RowItemType] | None]:
     return [_serialize_row(r) for r in rows]
 
 
-def get_event_by_id(event_id: int) -> dict | None:
+def get_event_by_id(conn, event_id: int) -> dict | None:
     """
     Retrieve a single event by its primary key.
 
@@ -60,7 +58,6 @@ def get_event_by_id(event_id: int) -> dict | None:
     Returns:
         dict or None: The event dictionary, or None if not found.
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
     row = cursor.fetchone()
@@ -69,7 +66,7 @@ def get_event_by_id(event_id: int) -> dict | None:
     return _serialize_row(row)
 
 
-def create_event(data):
+def create_event(conn, data):
     """
     Insert a new event into the database.
 
@@ -80,7 +77,6 @@ def create_event(data):
     Returns:
         dict: The newly created event (including its generated id).
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
         """
@@ -105,8 +101,7 @@ def create_event(data):
     return event
 
 
-def registration_get_all(event_id: int):
-    conn = get_db()
+def registration_get_all(conn, event_id: int):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
@@ -126,7 +121,6 @@ def registration_get_all(event_id: int):
     registrations = cursor.fetchall()
 
     cursor.close()
-    conn.close()
     return [_serialize_row(r) for r in registrations]
 
 

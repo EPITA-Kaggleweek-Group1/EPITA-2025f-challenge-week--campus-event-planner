@@ -6,15 +6,12 @@ Creates a temporary MySQL test database for each test session.
 
 import os
 import sys
+from app_factory import create_app
 from config.config import get_test_db_config
 import pytest
-import mysql.connector
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-TEST_DB_NAME = "test_campus_events"
-TEST_DB_CONFIG = get_test_db_config()
 
 
 @pytest.fixture(scope="session")
@@ -23,24 +20,24 @@ def test_db():
     Create a test database that lives for the entire test session.
     The database is dropped when the session ends.
     """
-    import database
+    from database import Database
+
+    db = Database(get_test_db_config())
 
     # Create the test database
-    config_no_db = {k: v for k, v in TEST_DB_CONFIG.items() if k != "database"}
-    conn = mysql.connector.connect(**config_no_db)
+    conn = db.get_admin_connection()
     cursor = conn.cursor()
-    cursor.execute(f"DROP DATABASE IF EXISTS {TEST_DB_NAME}")
-    cursor.execute(f"CREATE DATABASE {TEST_DB_NAME}")
+    cursor.execute(f"DROP DATABASE IF EXISTS {db.config['database']}")
+    cursor.execute(f"CREATE DATABASE {db.config['database']}")
     cursor.close()
     conn.close()
 
     # Point the app at the test database
-    TEST_DB_CONFIG["database"] = TEST_DB_NAME
-    database.init_db()
+    db.init_db()
 
     # Insert seed events
-    db = database.get_db()
-    cursor = db.cursor()
+    conn = db.get_connection()
+    cursor = conn.cursor()
     cursor.execute(
         """
         INSERT INTO events (title, description, date, location, capacity)
@@ -67,16 +64,16 @@ def test_db():
             30,
         ),
     )
-    db.commit()
+    conn.commit()
     cursor.close()
-    db.close()
+    conn.close()
 
-    yield TEST_DB_NAME
+    yield db.config["database"]
 
     # Cleanup
-    conn = mysql.connector.connect(**config_no_db)
+    conn = db.get_admin_connection()
     cursor = conn.cursor()
-    cursor.execute(f"DROP DATABASE IF EXISTS {TEST_DB_NAME}")
+    cursor.execute(f"DROP DATABASE IF EXISTS {db.config['database']}")
     cursor.close()
     conn.close()
 
@@ -86,7 +83,7 @@ def client(test_db):
     """
     Provide a Flask test client wired to the test database.
     """
-    from app import app as flask_app
+    flask_app = create_app(get_test_db_config())
 
     flask_app.config["TESTING"] = True
     with flask_app.test_client() as c:
