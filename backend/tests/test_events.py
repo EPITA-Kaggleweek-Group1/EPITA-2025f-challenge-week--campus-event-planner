@@ -13,6 +13,7 @@ import pytest
 #  Passing tests — features that already work
 # ------------------------------------------------------------------ #
 
+
 class TestListEvents:
     """GET /events"""
 
@@ -29,7 +30,15 @@ class TestListEvents:
         response = client.get("/events")
         data = response.get_json()
         event = data[0]
-        for field in ("id", "title", "date", "location", "capacity"):
+        for field in (
+            "id",
+            "title",
+            "description",
+            "date",
+            "location",
+            "capacity",
+            "image_url",
+        ):
             assert field in event, f"Missing field: {field}"
 
 
@@ -87,6 +96,7 @@ class TestCreateEvent:
 # ------------------------------------------------------------------ #
 #  Failing tests — students must implement these features
 # ------------------------------------------------------------------ #
+
 
 class TestRegistration:
     """Registration endpoints (NOT YET IMPLEMENTED)."""
