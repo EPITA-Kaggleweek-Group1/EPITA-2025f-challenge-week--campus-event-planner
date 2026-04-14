@@ -20,6 +20,7 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.epita.eventplanner.R;
 import com.epita.eventplanner.model.Event;
+import com.epita.eventplanner.util.DateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
         holder.titleText.setText(event.getTitle());
-        holder.dateText.setText(event.getDate());
+        holder.dateText.setText(DateUtils.formatToHuman(event.getDate()));
         holder.locationText.setText(event.getLocation());
         holder.capacityText.setText("Capacity: " + event.getCapacity());
 
