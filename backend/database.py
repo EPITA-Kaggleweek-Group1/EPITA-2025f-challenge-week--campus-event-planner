@@ -42,6 +42,9 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
+    # NOTE: We use VARCHAR(1024) for url. Since TEXT has maximum 64KB of data,
+    # that means it's not good for storage and indexing.
+    # We change it to VARCHAR(1024)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS events (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,8 +52,8 @@ def init_db():
             description TEXT,
             date VARCHAR(30) NOT NULL,
             location VARCHAR(255),
-            capacity INT DEFAULT 50,
-            image_url TEXT,
+            capacity INT NOT NULL DEFAULT 50,
+            image_url VARCHAR(1024),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
