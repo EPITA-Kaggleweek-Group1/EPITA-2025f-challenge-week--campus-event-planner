@@ -42,7 +42,18 @@ This is a **challenge week project** (~60% complete). The backend API is functio
 
 ---
 
+## Quick Start - MySQL server
+
+```bash
+cd backend
+# Make sure you have docker compose installed and docker server running
+docker compose up
+```
+
 ## Quick Start — Backend
+
+First of all, make sure you create `.env` based on `.env.example`.
+Please do not commit `.env` to the repository.
 
 ```bash
 cd backend
@@ -50,6 +61,7 @@ cd backend
 # 1. Create a virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
+# Fish: bass source venv/bin/activate
 
 # 2. Install dependencies
 pip install -r requirements.txt
