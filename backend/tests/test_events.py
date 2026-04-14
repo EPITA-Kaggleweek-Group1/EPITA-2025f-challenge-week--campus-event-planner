@@ -13,6 +13,7 @@ import pytest
 #  Passing tests — features that already work
 # ------------------------------------------------------------------ #
 
+
 class TestListEvents:
     """GET /events"""
 
@@ -87,6 +88,7 @@ class TestCreateEvent:
 # ------------------------------------------------------------------ #
 #  Failing tests — students must implement these features
 # ------------------------------------------------------------------ #
+
 
 class TestRegistration:
     """Registration endpoints (NOT YET IMPLEMENTED)."""

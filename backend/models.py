@@ -5,6 +5,9 @@ Thin data-access layer that wraps raw SQL queries and returns
 plain dictionaries ready for JSON serialization.
 """
 
+from typing import List
+
+from mysql.connector.types import RowItemType
 from database import get_db
 
 
@@ -19,7 +22,7 @@ def _serialize_row(row):
     return result
 
 
-def get_all_events():
+def get_all_events() -> List[dict[str, RowItemType] | None]:
     """
     Retrieve every event, ordered by date ascending.
 
@@ -35,7 +38,7 @@ def get_all_events():
     return [_serialize_row(r) for r in rows]
 
 
-def get_event_by_id(event_id):
+def get_event_by_id(event_id: int) -> dict | None:
     """
     Retrieve a single event by its primary key.
 
