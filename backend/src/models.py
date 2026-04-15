@@ -91,3 +91,28 @@ def create_event(data):
     cursor.close()
     conn.close()
     return event
+
+
+def registration_get_all(event_id: int):
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
+    event = cursor.fetchone()
+
+    if event is None:
+        return None
+
+    cursor.execute(
+        """
+        SELECT id, user_name, email, created_at
+        FROM registrations
+        WHERE event_id = %s
+        """,
+        (event_id,),
+    )
+    registrations = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return [_serialize_row(r) for r in registrations]

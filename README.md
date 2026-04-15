@@ -301,6 +301,7 @@ Create a new event.
 | CEPN-S007 | [Mobile] Loading spinner + error view with retry |
 | CEPN-S008 | [API] Create registrations table (id, event_id, user_name, email) |
 | CEPN-S009 | [API] POST /events/:id/registrations with validation |
+| CEPN-S009-1 | [API] GET /events/:id/registrations |
 | CEPN-S010 | [API] Check capacity vs count, return 409 if full |
 | CEPN-S011 | [API] On success insert + return 201 |
 | CEPN-S012 | [Mobile] Register button on detail screen |

@@ -195,6 +195,7 @@ def seed_users():
     print(f"Seeded {len(users)} users.")
 
 
+# TODO: We need to add registration seed
 if __name__ == "__main__":
     seed()
     seed_users()
