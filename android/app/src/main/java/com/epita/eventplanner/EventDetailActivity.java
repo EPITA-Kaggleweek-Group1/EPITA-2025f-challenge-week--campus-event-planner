@@ -1,31 +1,33 @@
 package com.epita.eventplanner;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.util.Patterns; // For email validation
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.bumptech.glide.Glide;
+
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+
 import org.json.JSONObject;
 
 public class EventDetailActivity extends AppCompatActivity {
+
     private ProgressBar loadingSpinner;
     private LinearLayout errorView;
     private ScrollView detailContent;
     private Button retryButton, registerButton;
     private TextView detailTitle, detailDate, detailLocation, detailCapacity, detailDescription, remainingSpots;
-    private ImageView detailImage;
     private int eventId;
 
     @Override
@@ -39,7 +41,7 @@ public class EventDetailActivity extends AppCompatActivity {
         retryButton = findViewById(R.id.retryButton);
         registerButton = findViewById(R.id.registerButton);
         remainingSpots = findViewById(R.id.remainingSpots);
-        detailImage = findViewById(R.id.detailImage);
+
         detailTitle = findViewById(R.id.detailTitle);
         detailDate = findViewById(R.id.detailDate);
         detailLocation = findViewById(R.id.detailLocation);
@@ -47,90 +49,109 @@ public class EventDetailActivity extends AppCompatActivity {
         detailDescription = findViewById(R.id.detailDescription);
 
         eventId = getIntent().getIntExtra("event_id", -1);
-        retryButton.setOnClickListener(v -> loadEventDetails(eventId));
+
         registerButton.setOnClickListener(v -> showRegisterDialog());
+        retryButton.setOnClickListener(v -> loadEventDetails(eventId));
 
         if (eventId != -1) loadEventDetails(eventId);
+    }
+
+    private void showRegisterDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_register, null);
+
+        // References to Layouts (for showing errors) and Edits (for getting text)
+        TextInputLayout layoutName = dialogView.findViewById(R.id.layoutName);
+        TextInputLayout layoutEmail = dialogView.findViewById(R.id.layoutEmail);
+        TextInputEditText editName = dialogView.findViewById(R.id.editName);
+        TextInputEditText editEmail = dialogView.findViewById(R.id.editEmail);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Register")
+                .setView(dialogView)
+                .setPositiveButton("Submit", null) // Set to null first to override closing behavior
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String name = editName.getText().toString().trim();
+                String email = editEmail.getText().toString().trim();
+
+                boolean isValid = true;
+
+                // 1. Validate Name
+                if (name.isEmpty()) {
+                    layoutName.setError("Name is required");
+                    isValid = false;
+                } else if (name.length() < 2) {
+                    layoutName.setError("Name is too short");
+                    isValid = false;
+                } else {
+                    layoutName.setError(null);
+                }
+
+                // 2. Validate Email
+                if (email.isEmpty()) {
+                    layoutEmail.setError("Email is required");
+                    isValid = false;
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    layoutEmail.setError("Invalid email format");
+                    isValid = false;
+                } else {
+                    layoutEmail.setError(null);
+                }
+
+                // 3. Submit if valid
+                if (isValid) {
+                    submitRegistration(name, email);
+                    dialog.dismiss();
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void submitRegistration(String name, String email) {
+        new Thread(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("user_name", name);
+                json.put("email", email);
+
+                ApiClient.postJson("/events/" + eventId + "/register", json.toString());
+
+                runOnUiThread(() -> Toast.makeText(this, "Registration Successful!", Toast.LENGTH_LONG).show());
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     private void loadEventDetails(int id) {
         showLoading();
         new Thread(() -> {
             try {
-                // 1. Mandatory: Fetch Event Basic Info
-                String eventJson = ApiClient.fetchJson("/events/" + id);
-                Event event = Event.fromJson(new JSONObject(eventJson));
-
-                // 2. Optional: Fetch Registration Count (Nested Try-Catch)
-                int regCount = 0;
-                try {
-                    String regJson = ApiClient.fetchJson("/events/" + id + "/registrations");
-                    regCount = new JSONObject(regJson).optInt("count", 0);
-                } catch (Exception e) {
-                    Log.e("API_WARNING", "Registration count failed, but showing event anyway.");
-                }
-
-                int finalRegCount = regCount;
+                String json = ApiClient.fetchJson("/events/" + id);
+                Event event = Event.fromJson(new JSONObject(json));
                 runOnUiThread(() -> {
-                    populateUI(event, finalRegCount);
+                    populateUI(event);
                     showContent();
                 });
-
             } catch (Exception e) {
-                Log.e("API_ERROR", "Core event fetch failed", e);
                 runOnUiThread(this::showError);
             }
         }).start();
     }
 
-    private void populateUI(Event event, int regCount) {
+    private void populateUI(Event event) {
         detailTitle.setText(event.getTitle());
         detailDescription.setText(event.getDescription());
         detailLocation.setText(event.getLocation());
         detailDate.setText(event.getDate());
         detailCapacity.setText("Capacity: " + event.getCapacity());
-
-        int left = event.getCapacity() - regCount;
-        remainingSpots.setText("Spots remaining: " + (left < 0 ? 0 : left));
-
-        if (event.getImageUrl() != null && !event.getImageUrl().isEmpty()) {
-            Glide.with(this)
-                    .load(event.getImageUrl())
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .into(detailImage);
-        }
-    }
-
-    private void showRegisterDialog() {
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_register, null);
-        TextInputEditText nameInput = view.findViewById(R.id.editName);
-        TextInputEditText emailInput = view.findViewById(R.id.editEmail);
-
-        new AlertDialog.Builder(this)
-                .setTitle("Register")
-                .setView(view)
-                .setPositiveButton("Submit", (d, w) -> {
-                    submitRegistration(nameInput.getText().toString(), emailInput.getText().toString());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void submitRegistration(String name, String email) {
-        new Thread(() -> {
-            try {
-                JSONObject body = new JSONObject();
-                body.put("user_name", name);
-                body.put("email", email);
-                ApiClient.postJson("/events/" + eventId + "/register", body.toString());
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Successfully Registered!", Toast.LENGTH_SHORT).show();
-                    loadEventDetails(eventId);
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Registration currently unavailable.", Toast.LENGTH_LONG).show());
-            }
-        }).start();
+        remainingSpots.setText("Spots available: " + event.getCapacity());
     }
 
     private void showLoading() {
