@@ -2,27 +2,13 @@ package com.epita.eventplanner.api;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * Lightweight HTTP helper for communicating with the Flask backend.
- *
- * The base URL defaults to the Android emulator's alias for localhost.
- * Change it to your machine's LAN IP if testing on a physical device.
- */
 public class ApiClient {
-
-    // 10.0.2.2 is the Android emulator alias for the host machine's localhost
     private static final String BASE_URL = "http://10.0.2.2:5000";
 
-    /**
-     * Perform a GET request and return the response body as a String.
-     *
-     * @param path API path, e.g. "/events" or "/events/1"
-     * @return JSON response body
-     * @throws Exception on network or HTTP error
-     */
     public static String fetchJson(String path) throws Exception {
         URL url = new URL(BASE_URL + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -35,23 +21,42 @@ public class ApiClient {
             throw new Exception("HTTP error: " + status);
         }
 
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(conn.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
+        while ((line = reader.readLine()) != null) sb.append(line);
         reader.close();
         conn.disconnect();
-
         return sb.toString();
     }
 
     /**
-     * Return the base URL (useful for building full URLs elsewhere).
+     * Perform a POST request with a JSON body.
      */
-    public static String getBaseUrl() {
-        return BASE_URL;
+    public static String postJson(String path, String jsonBody) throws Exception {
+        URL url = new URL(BASE_URL + path);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json; utf-8");
+        conn.setRequestProperty("Accept", "application/json");
+        conn.setDoOutput(true);
+
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonBody.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        int status = conn.getResponseCode();
+        if (status != HttpURLConnection.HTTP_OK && status != HttpURLConnection.HTTP_CREATED) {
+            throw new Exception("HTTP error: " + status);
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) sb.append(line);
+        return sb.toString();
     }
+
+    public static String getBaseUrl() { return BASE_URL; }
 }
