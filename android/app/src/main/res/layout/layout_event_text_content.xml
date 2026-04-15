@@ -25,7 +25,7 @@
         android:layout_marginBottom="4dp"
         android:textColor="#757575"
         android:textSize="14sp"
-        tools:text="Oct 24, 2024" />
+        tools:text="Fri, Oct 24, 2024 at 10:00 AM" />
 
     <!-- Location -->
     <TextView
