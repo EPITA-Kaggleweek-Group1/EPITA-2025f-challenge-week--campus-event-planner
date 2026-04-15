@@ -15,6 +15,7 @@ Students must add:
 from flask import jsonify, request
 from models import (
     AlreadyRegisteredError,
+    EventFullError,
     EventNotFoundError,
     get_all_events,
     get_event_by_id,
@@ -114,7 +115,7 @@ def register_events_routes(app):
         201 - The created registration.
         400 - If the request is not valid.
         404 - If the event is not presented.
-        409 - If the user already registered.
+        409 - If the user already registered, or the event is full.
         """
         conn = app.db.get_connection()
         try:
@@ -130,6 +131,8 @@ def register_events_routes(app):
             return jsonify({"error": "Event not found"}), 404
         except AlreadyRegisteredError:
             return jsonify({"error": "Registration already exist"}), 409
+        except EventFullError:
+            return jsonify({"error": "Event is full"}), 409
         except Exception:
             return jsonify({"error": "Internal server error"}), 500
         finally:

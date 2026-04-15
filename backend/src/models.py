@@ -5,8 +5,10 @@ Thin data-access layer that wraps raw SQL queries and returns
 plain dictionaries ready for JSON serialization.
 """
 
-from typing import List
+from typing import Any, Dict, List
 
+from mysql.connector.abstracts import MySQLConnectionAbstract
+from mysql.connector.pooling import PooledMySQLConnection
 from mysql.connector.types import RowItemType
 
 
@@ -124,14 +126,38 @@ def registration_get_all(conn, event_id: int):
     return [_serialize_row(r) for r in registrations]
 
 
-def registration_create(conn, event_id, data):
+# TODO: This code need refactory. We need to fix the type checker error
+# Create wrapper for Registration and Event Models.
+def registration_create(
+    conn: MySQLConnectionAbstract | PooledMySQLConnection, event_id, data
+):
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT id, capacity FROM events WHERE id = %s", (event_id,))
-    event = cursor.fetchone()
-    if not event:
-        raise EventNotFoundError()
     try:
+        conn.start_transaction()
+        cursor.execute(
+            "SELECT id, capacity FROM events WHERE id = %s FOR UPDATE", (event_id,)
+        )
+        event = cursor.fetchone()
+        if not event:
+            raise EventNotFoundError()
+
+        # TODO: We need to have wrapper
+        event_capacity = event["capacity"]  # type: ignore
+        cursor.execute(
+            "SELECT COUNT(*) AS count FROM registrations WHERE event_id = %s",
+            (event_id,),
+        )
+
+        row = cursor.fetchone()
+        if row is None:
+            # TODO: Make this into an error.
+            raise RuntimeError("COUNT query returned no result")
+        registration_count = row["count"]  # type: ignore
+
+        if registration_count >= event_capacity:
+            raise EventFullError()
+
         cursor.execute(
             """
             INSERT INTO registrations (event_id, user_name, email)
@@ -140,15 +166,15 @@ def registration_create(conn, event_id, data):
             (event_id, data["user_name"], data["email"]),
         )
 
-        conn.commit()
-
         new_id = cursor.lastrowid
         cursor.execute("SELECT * FROM registrations WHERE id = %s", (new_id,))
         registration = _serialize_row(cursor.fetchone())
 
+        conn.commit()
         return registration
 
     except Exception as e:
+        conn.rollback()
         if "Duplicate entry" in str(e):
             raise AlreadyRegisteredError()
         raise
