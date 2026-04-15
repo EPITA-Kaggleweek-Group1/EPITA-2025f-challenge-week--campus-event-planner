@@ -8,6 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,6 +23,10 @@ public class EventDetailActivity extends AppCompatActivity {
     private LinearLayout errorView;
     private ScrollView detailContent;
     private Button retryButton;
+
+    // Registration UI
+    private Button registerButton;
+    private TextView remainingSpots;
 
     private TextView detailTitle, detailDate, detailLocation, detailCapacity, detailDescription;
     private int eventId;
@@ -44,7 +49,17 @@ public class EventDetailActivity extends AppCompatActivity {
         detailCapacity = findViewById(R.id.detailCapacity);
         detailDescription = findViewById(R.id.detailDescription);
 
+        // Initialize Registration UI
+        registerButton = findViewById(R.id.registerButton);
+        remainingSpots = findViewById(R.id.remainingSpots);
+
         eventId = getIntent().getIntExtra("event_id", -1);
+
+        // Register Button Click
+        registerButton.setOnClickListener(v -> {
+            // This prepares for TODO 2: Opening the registration form
+            Toast.makeText(this, "Opening Registration for Event #" + eventId, Toast.LENGTH_SHORT).show();
+        });
 
         // Retry logic
         retryButton.setOnClickListener(v -> loadEventDetails(eventId));
@@ -55,22 +70,22 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void loadEventDetails(int id) {
-        // Show loading state, hide others
         showLoading();
 
         new Thread(() -> {
             try {
+                // Fetch Event Data
                 String json = ApiClient.fetchJson("/events/" + id);
                 JSONObject jsonObject = new JSONObject(json);
                 Event event = Event.fromJson(jsonObject);
 
                 runOnUiThread(() -> {
                     populateUI(event);
-                    showContent(); // Show success state
+                    showContent();
                 });
 
             } catch (Exception e) {
-                runOnUiThread(this::showError); // Show error state
+                runOnUiThread(this::showError);
             }
         }).start();
     }
@@ -98,6 +113,9 @@ public class EventDetailActivity extends AppCompatActivity {
         detailDescription.setText(event.getDescription());
         detailLocation.setText(event.getLocation());
         detailDate.setText(event.getDate());
-        detailCapacity.setText("Capacity: " + event.getCapacity());
+        detailCapacity.setText("Total Capacity: " + event.getCapacity());
+
+        // Update remaining spots placeholder
+        remainingSpots.setText("Spots available: " + event.getCapacity());
     }
 }

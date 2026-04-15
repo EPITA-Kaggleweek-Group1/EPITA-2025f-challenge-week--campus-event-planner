@@ -38,7 +38,8 @@
     <ScrollView
         android:id="@+id/detailContent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,39 +53,75 @@
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
                 android:layout_marginBottom="16dp"
-                android:background="#EEEEEE" />
+                android:background="#EEEEEE"
+                android:contentDescription="Event Image" />
 
             <TextView
                 android:id="@+id/detailTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Event Title"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                android:textColor="#212121"
                 android:layout_marginBottom="12dp" />
 
             <TextView
                 android:id="@+id/detailDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Date placeholder"
+                android:textSize="16sp"
+                android:textColor="#757575"
                 android:layout_marginBottom="8dp" />
 
             <TextView
                 android:id="@+id/detailLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Location placeholder"
+                android:textSize="16sp"
+                android:textColor="#757575"
                 android:layout_marginBottom="8dp" />
 
             <TextView
                 android:id="@+id/detailCapacity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Capacity: --"
+                android:textSize="16sp"
+                android:textColor="#757575"
                 android:layout_marginBottom="16dp" />
 
             <TextView
                 android:id="@+id/detailDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:lineSpacingMultiplier="1.3" />
+                android:text="Description placeholder"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingMultiplier="1.3"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
+                android:id="@+id/remainingSpots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Checking availability..."
+                android:textSize="14sp"
+                android:textStyle="italic"
+                android:textColor="#FF5722"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/registerButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Register for Event"
+                android:backgroundTint="#2196F3"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp" />
 
         </LinearLayout>
     </ScrollView>
