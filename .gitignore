@@ -26,7 +26,7 @@ android/app/*.iml
 android/.idea/
 android/captures/
 android/.externalNativeBuild/
-
+gradle-daemon-jvm.properties
 # ============================================================
 # iOS / Xcode
 # ============================================================
