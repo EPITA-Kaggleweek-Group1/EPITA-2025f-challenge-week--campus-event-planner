@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Event title -->
+    <TextView
+        android:id="@+id/eventTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:textColor="#212121"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Annual Tech Symposium" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/eventDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:textColor="#757575"
+        android:textSize="14sp"
+        tools:text="Oct 24, 2024" />
+
+    <!-- Location -->
+    <TextView
+        android:id="@+id/eventLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:textColor="#757575"
+        android:textSize="14sp"
+        tools:text="Grand Hall, Campus" />
+
+    <!-- Capacity -->
+    <TextView
+        android:id="@+id/eventCapacity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#9E9E9E"
+        android:textSize="13sp"
+        tools:text="Capacity: 150" />
+
+</LinearLayout>

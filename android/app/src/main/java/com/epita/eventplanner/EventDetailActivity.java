@@ -2,10 +2,13 @@ package com.epita.eventplanner;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ImageView; // Added for the image requirement
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
 import org.json.JSONObject;
@@ -24,6 +27,7 @@ public class EventDetailActivity extends AppCompatActivity {
   private TextView detailLocation;
   private TextView detailCapacity;
   private TextView detailDescription;
+  private ImageView detailImage;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,7 @@ public class EventDetailActivity extends AppCompatActivity {
     detailLocation = findViewById(R.id.detailLocation);
     detailCapacity = findViewById(R.id.detailCapacity);
     detailDescription = findViewById(R.id.detailDescription);
+    detailImage = findViewById(R.id.detailImage);
 
     // 2. Read the "event_id" extra passed from MainActivity
     int eventId = getIntent().getIntExtra("event_id", -1);
@@ -90,6 +95,18 @@ public class EventDetailActivity extends AppCompatActivity {
 
     // Format date (For now using raw string, you can add a formatter later)
     detailDate.setText(event.getDate());
+
+    // Load image
+    String imageUrl = event.getImageUrl();
+    if (imageUrl != null && !imageUrl.isEmpty()) {
+      detailImage.setVisibility(android.view.View.VISIBLE);
+      Glide.with(this)
+          .load(imageUrl)
+          .centerCrop()
+          .into(detailImage);
+    } else {
+      detailImage.setVisibility(android.view.View.GONE);
+    }
 
     // Set the Activity Title to the Event Name for better UX
     if (getSupportActionBar() != null) {
