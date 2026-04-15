@@ -230,6 +230,59 @@ class TestCreateRegistration:
         data = r2.get_json()
         assert data["event_id"] == 2
 
+    def test_event_capacity_limit_reached(self, client):
+        """Event should reject registrations when capacity is full."""
+
+        # 1. create event with capacity = 1
+        payload = {
+            "title": "Limited Workshop",
+            "description": "Only one seat available",
+            "date": "2026-05-01T09:00:00",
+            "location": "Lab 303",
+            "capacity": 1,
+        }
+
+        create_resp = client.post(
+            "/events",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert create_resp.status_code == 201
+        event = create_resp.get_json()
+        event_id = event["id"]
+
+        # 2. first registration → should succeed
+        user1 = {
+            "user_name": "Alice",
+            "email": "alice@test.com",
+        }
+
+        r1 = client.post(
+            f"/events/{event_id}/register",
+            data=json.dumps(user1),
+            content_type="application/json",
+        )
+
+        assert r1.status_code == 201
+
+        # 3. second registration → should fail (event full)
+        user2 = {
+            "user_name": "Bob",
+            "email": "bob@test.com",
+        }
+
+        r2 = client.post(
+            f"/events/{event_id}/register",
+            data=json.dumps(user2),
+            content_type="application/json",
+        )
+
+        assert r2.status_code in (400, 409)
+
+        data = r2.get_json()
+        assert "error" in data or "message" in data
+
     @pytest.mark.xfail(reason="Registrations count endpoint not implemented yet")
     def test_registrations_count(self, client):
         """GET /events/<id>/registrations should return registration count."""
