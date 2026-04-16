@@ -60,6 +60,22 @@
                     android:backgroundTint="#2196F3"
                     android:text="@string/register_event"
                     android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:id="@+id/eventFullNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="#FFE0E0"
+                    android:padding="16dp"
+                    android:text="@string/event_full"
+                    android:textColor="#D32F2F"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
             </LinearLayout>
 
         </RelativeLayout>
