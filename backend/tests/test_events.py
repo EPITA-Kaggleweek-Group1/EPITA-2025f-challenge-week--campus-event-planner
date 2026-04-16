@@ -8,7 +8,7 @@ features have not been implemented yet. Students must make these tests pass.
 import json
 import pytest
 from werkzeug.wrappers import response
-
+from datetime import datetime
 from seed import seed_users, seed
 
 
@@ -500,7 +500,9 @@ class TestSearch:
         assert len(data) > 0
 
         for event in data:
-            assert event["date"] >= "2026-06-01"
+            event_dt = parse_api_datetime(event["date"])
+            expected_dt = parse_date("2026-06-01")
+            assert event_dt >= expected_dt
 
     def test_event_search_date_to(self, client):
         """GET /events?date_to should return events on/before given date."""
@@ -528,7 +530,9 @@ class TestSearch:
         assert len(data) > 0
 
         for event in data:
-            assert event["date"] <= "2026-05-10"
+            event_dt = parse_api_datetime(event["date"])
+            expected_dt = parse_date("2026-05-10")
+            assert event_dt <= expected_dt
 
     def test_event_search_date_range(self, client):
         """GET /events?date_from&date_to should return events within range."""
@@ -555,8 +559,12 @@ class TestSearch:
         assert isinstance(data, list)
         assert len(data) > 0
 
+        start_dt = parse_date("2026-05-01")
+        end_dt = parse_date("2026-05-31")
+
         for event in data:
-            assert "2026-05-01" <= event["date"] <= "2026-05-31"
+            event_dt = parse_api_datetime(event["date"])
+            assert start_dt <= event_dt <= end_dt
 
     def test_events_default_order_is_asc(self, client):
         """GET /events should return events ordered by date DESC by default."""
@@ -570,7 +578,9 @@ class TestSearch:
 
         # check descending order
         for i in range(len(data) - 1):
-            assert data[i]["date"] <= data[i + 1]["date"]
+            d1 = parse_api_datetime(data[i]["date"])
+            d2 = parse_api_datetime(data[i + 1]["date"])
+            assert d1 <= d2
 
     def test_events_order_desc(self, client):
         """GET /events?order=desc should return events ordered by date DESC."""
@@ -583,7 +593,9 @@ class TestSearch:
         assert len(data) >= 2
 
         for i in range(len(data) - 1):
-            assert data[i]["date"] >= data[i + 1]["date"]
+            d1 = parse_api_datetime(data[i]["date"])
+            d2 = parse_api_datetime(data[i + 1]["date"])
+            assert d1 >= d2
 
     def test_events_order_asc(self, client):
         """GET /events?order=asc should return events ordered by date ASC."""
@@ -596,4 +608,16 @@ class TestSearch:
         assert len(data) >= 2
 
         for i in range(len(data) - 1):
-            assert data[i]["date"] <= data[i + 1]["date"]
+            d1 = parse_api_datetime(data[i]["date"])
+            d2 = parse_api_datetime(data[i + 1]["date"])
+            assert d1 <= d2
+
+
+def parse_api_datetime(value: str) -> datetime:
+    """Parse Flask RFC1123 datetime string."""
+    return datetime.strptime(value, "%a, %d %b %Y %H:%M:%S GMT")
+
+
+def parse_date(value: str) -> datetime:
+    """Parse YYYY-MM-DD date string."""
+    return datetime.strptime(value, "%Y-%m-%d")
