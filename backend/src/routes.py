@@ -23,7 +23,7 @@ from models import (
     registration_get_all,
     registration_get_count,
 )
-from service import service_filter_events
+from service import service_filter_events, service_update_event
 
 
 def register_events_routes(app):
@@ -218,17 +218,13 @@ def register_events_routes(app):
 
     @app.route("/events/<int:event_id>", methods=["PATCH"])
     def update_event(event_id):
-        data = request.get_json()
+        data = request.get_json() or {}
+
         conn = app.db.get_connection()
-        cursor = conn.cursor()
-        fields = []
-        values = []
-        for key, value in data.items():
-            fields.append(f"{key} = %s")
-            values.append(value)
-        values.append(event_id)
-        cursor.execute(f"UPDATE events SET {', '.join(fields)} WHERE id = %s", values)
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return jsonify({"message": "Event updated"}), 200
+        try:
+            service_update_event(conn, event_id, data)
+            return jsonify({"message": "Event updated"}), 200
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        finally:
+            conn.close()

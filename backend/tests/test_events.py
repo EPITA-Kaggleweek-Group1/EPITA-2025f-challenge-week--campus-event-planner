@@ -64,6 +64,54 @@ class TestGetEventById:
         assert "error" in data
 
 
+class TestPatchEventById:
+    def test_event_update_sql_injection_via_field_name_98(self, client):
+        """
+        This is reported in: https://github.com/EPITA-Kaggleweek-Group1/EPITA-2025f-challenge-week--campus-event-planner/issues/98
+        Ensure malicious field names cannot break SQL structure.
+        """
+
+        # 1. create a new event
+        create_payload = {
+            "title": "Injection Test Event",
+            "description": "Safe event",
+            "date": "2026-06-01T10:00:00",
+            "location": "Lab",
+            "capacity": 10,
+        }
+
+        create_resp = client.post(
+            "/events",
+            data=json.dumps(create_payload),
+            content_type="application/json",
+        )
+        assert create_resp.status_code == 201
+
+        event_id = create_resp.get_json()["id"]
+
+        # 2. malicious payload
+        malicious_payload = {f'title = "HACKED" where id = {event_id} -- ': "x"}
+
+        response = client.patch(
+            f"/events/{event_id}",
+            data=json.dumps(malicious_payload),
+            content_type="application/json",
+        )
+
+        # 3. assert safe behavior
+
+        # assert response.status_code in (400, 422, 500)
+
+        # 4. verify DB not corrupted by checking event still exists correctly
+        get_resp = client.get(f"/events/{event_id}")
+        assert get_resp.status_code == 200
+
+        data = get_resp.get_json()
+
+        assert data["title"] == "Injection Test Event"
+        assert data["description"] == "Safe event"
+
+
 class TestCreateEvent:
     """POST /events"""
 

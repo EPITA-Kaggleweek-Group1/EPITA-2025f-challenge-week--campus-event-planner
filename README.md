@@ -390,7 +390,7 @@ Create a new registration
 
 | Code      | TODO                                      | Status |
 | --------- | ----------------------------------------- | ------ |
-| CEPN-C007 | Find SQL Injection (CWE-89)               | ✅ 🚧    |
+| CEPN-C007 | Find SQL Injection (CWE-89)               | ✅      |
 | CEPN-C008 | Find Stored XSS (CWE-79)                  | 🚧      |
 | CEPN-C009 | Find IDOR (CWE-639)                       | 🚧      |
 | CEPN-C010 | Find hardcoded secrets (CWE-798)          | 🚧      |
