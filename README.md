@@ -380,11 +380,11 @@ Create a new registration
 | Code      | TODO                                                   | Status |
 | --------- | ------------------------------------------------------ | ------ |
 | CEPN-C001 | Architecture diagram + data flows + trust boundaries   | ✅      |
-| CEPN-C002 | Endpoint inventory (method, inputs, auth, sensitivity) | ?      |
-| CEPN-C003 | STRIDE analysis on main flow                           | ?      |
-| CEPN-C004 | Attack surface mapping (all untrusted inputs)          | ?      |
-| CEPN-C005 | Attack tree (3+ paths, AND/OR nodes)                   | ?      |
-| CEPN-C006 | 1-page threat assessment (top 5 risks)                 | ?      |
+| CEPN-C002 | Endpoint inventory (method, inputs, auth, sensitivity) | ✅      |
+| CEPN-C003 | STRIDE analysis on main flow                           | ✅      |
+| CEPN-C004 | Attack surface mapping (all untrusted inputs)          | ✅      |
+| CEPN-C005 | Attack tree (3+ paths, AND/OR nodes)                   | ✅      |
+| CEPN-C006 | 1-page threat assessment (top 5 risks)                 | ✅      |
 
 ### Code Review / Bug Bounty (C007-C016)
 
@@ -392,38 +392,38 @@ Create a new registration
 | --------- | ----------------------------------------- | ------ |
 | CEPN-C007 | Find SQL Injection (CWE-89)               | ✅      |
 | CEPN-C008 | Find Stored XSS (CWE-79)                  | ✅      |
-| CEPN-C009 | Find IDOR (CWE-639)                       | 🚧      |
-| CEPN-C010 | Find hardcoded secrets (CWE-798)          | 🚧      |
-| CEPN-C011 | Find weak password hashing (CWE-328)      | 🚧      |
-| CEPN-C012 | Audit missing authentication (CWE-306)    | 🚧      |
-| CEPN-C013 | Analyze CORS configuration                | 🚧      |
-| CEPN-C014 | Find debug mode exposure (CWE-489)        | 🚧      |
-| CEPN-C015 | Review error handling (CWE-209)           | 🚧      |
-| CEPN-C016 | Audit SE teammates' code (2+ bug reports) | 🚧      |
+| CEPN-C009 | Find IDOR (CWE-639)                       | ✅      |
+| CEPN-C010 | Find hardcoded secrets (CWE-798)          | ✅      |
+| CEPN-C011 | Find weak password hashing (CWE-328)      | ✅      |
+| CEPN-C012 | Audit missing authentication (CWE-306)    | ✅      |
+| CEPN-C013 | Analyze CORS configuration                | ✅      |
+| CEPN-C014 | Find debug mode exposure (CWE-489)        | ✅      |
+| CEPN-C015 | Review error handling (CWE-209)           | ✅      |
+| CEPN-C016 | Audit SE teammates' code (2+ bug reports) | ✅      |
 
 ### Security Testing (C017-C024)
 
 | Code      | TODO                                                 | Status |
 | --------- | ---------------------------------------------------- | ------ |
-| CEPN-C017 | SQLi exploit script                                  |        |
-| CEPN-C018 | XSS exploit (3 payloads)                             |        |
-| CEPN-C019 | IDOR enumeration script                              |        |
-| CEPN-C020 | Rate limit / DoS test                                |        |
-| CEPN-C021 | Automated scan (nmap + Python)                       |        |
-| CEPN-C022 | API fuzzer                                           |        |
-| CEPN-C023 | Project-specific exploit (Werkzeug/pickle/CSRF/etc.) |        |
-| CEPN-C024 | test_security.py (8+ pytest cases)                   |        |
+| CEPN-C017 | SQLi exploit script                                  | ✅       |
+| CEPN-C018 | XSS exploit (3 payloads)                             | ✅       |
+| CEPN-C019 | IDOR enumeration script                              | ✅       |
+| CEPN-C020 | Rate limit / DoS test                                | ✅       |
+| CEPN-C021 | Automated scan (nmap + Python)                       | ✅       |
+| CEPN-C022 | API fuzzer                                           | ✅       |
+| CEPN-C023 | Project-specific exploit (Werkzeug/pickle/CSRF/etc.) | ✅       |
+| CEPN-C024 | test_security.py (8+ pytest cases)                   | ✅       |
 
 ### Deployment & Hardening (C025-C030)
 
 | Code      | TODO                                             | Status |
 | --------- | ------------------------------------------------ | ------ |
-| CEPN-C025 | Fix SQL Injection (parameterized queries)        |        |
-| CEPN-C026 | Add authentication + fix IDOR                    |        |
-| CEPN-C027 | Secure configuration (debug, secrets, passwords) |        |
-| CEPN-C028 | Security headers + rate limiting                 |        |
-| CEPN-C029 | Structured logging + alerting                    |        |
-| CEPN-C030 | Final 5-page audit report                        |        |
+| CEPN-C025 | Fix SQL Injection (parameterized queries)        | ✅       |
+| CEPN-C026 | Add authentication + fix IDOR                    | ✅       |
+| CEPN-C027 | Secure configuration (debug, secrets, passwords) | ✅       |
+| CEPN-C028 | Security headers + rate limiting                 | ✅       |
+| CEPN-C029 | Structured logging + alerting                    | ✅       |
+| CEPN-C030 | Final 5-page audit report                        | ✅       |
 
 ---
 ## PR Workflow
