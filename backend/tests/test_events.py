@@ -424,3 +424,88 @@ class TestSearch:
 
             # should not return any rows from injection
             assert len(data) == 0
+
+    def test_event_search_date_from(self, client):
+        """GET /events?date_from should return events on/after given date."""
+
+        # create event (future date)
+        payload = {
+            "title": "Date From Test Event",
+            "description": "testing date_from filter",
+            "date": "2026-06-01T10:00:00",
+            "location": "Lab",
+            "capacity": 10,
+        }
+
+        create_resp = client.post(
+            "/events",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        assert create_resp.status_code == 201
+
+        response = client.get("/events?date_from=2026-06-01")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+
+        for event in data:
+            assert event["date"] >= "2026-06-01"
+
+    def test_event_search_date_to(self, client):
+        """GET /events?date_to should return events on/before given date."""
+
+        payload = {
+            "title": "Date To Test Event",
+            "description": "testing date_to filter",
+            "date": "2026-05-10T10:00:00",
+            "location": "Lab",
+            "capacity": 10,
+        }
+
+        create_resp = client.post(
+            "/events",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        assert create_resp.status_code == 201
+
+        response = client.get("/events?date_to=2026-05-10")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+
+        for event in data:
+            assert event["date"] <= "2026-05-10"
+
+    def test_event_search_date_range(self, client):
+        """GET /events?date_from&date_to should return events within range."""
+
+        payload = {
+            "title": "Date Range Test Event",
+            "description": "testing range filter",
+            "date": "2026-05-15T10:00:00",
+            "location": "Lab",
+            "capacity": 10,
+        }
+
+        create_resp = client.post(
+            "/events",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        assert create_resp.status_code == 201
+
+        response = client.get("/events?date_from=2026-05-01&date_to=2026-05-31")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+
+        for event in data:
+            assert "2026-05-01" <= event["date"] <= "2026-05-31"

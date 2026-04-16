@@ -52,21 +52,29 @@ def register_events_routes(app):
         Return all events as JSON array.
 
         Supported filters:
-        - ?search= (title OR description OR location)
+        - ?search=
         - ?title=
         - ?description=
-        - ?date= (TODO later)
+        - ?date_from=
+        - ?date_to=
         """
 
         search = request.args.get("search")
         title = request.args.get("title")
         description = request.args.get("description")
+        date_from = request.args.get("date_from")
+        date_to = request.args.get("date_to")
 
         conn = app.db.get_connection()
 
         try:
-            # no filters → return all
-            if not search and not title and not description:
+            if (
+                not search
+                and not title
+                and not description
+                and not date_from
+                and not date_to
+            ):
                 events = get_all_events(conn)
             else:
                 events = service_filter_events(
@@ -74,6 +82,8 @@ def register_events_routes(app):
                     search=search,
                     title=title,
                     description=description,
+                    date_from=date_from,
+                    date_to=date_to,
                 )
 
             return jsonify(events), 200
