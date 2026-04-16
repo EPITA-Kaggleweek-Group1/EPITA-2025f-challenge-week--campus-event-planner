@@ -355,12 +355,12 @@ Create a new registration
 | CEPN-S027 | [Mobile] Favorite icon on cards + detail                   | ✅      |
 | CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) | ✅      |
 | CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              | ✅      |
-| CEPN-S030 | [Mobile] Favorites screen in navigation                    |        |
+| CEPN-S030 | [Mobile] Favorites screen in navigation                    | ✅      |
 | CEPN-S031 | [Mobile] Favorites persist across restart                  |        |
 | CEPN-S032 | [API] Pagination: page + limit params, total_count         | ✅      |
 | CEPN-S033 | [Mobile] Infinite scroll with loading indicator            | ✅      |
 | CEPN-S034 | [Mobile] Pull-to-refresh on event list                     | ✅      |
-| CEPN-S035 | [Mobile] Event image thumbnails + placeholder              |
+| CEPN-S035 | [Mobile] Event image thumbnails + placeholder              |        |
 
 ### Polish (36-40)
 

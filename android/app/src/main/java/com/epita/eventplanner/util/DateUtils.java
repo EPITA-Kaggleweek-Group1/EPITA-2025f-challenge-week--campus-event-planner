@@ -71,6 +71,26 @@ public class DateUtils {
         return date.after(now.getTime()) && date.before(monthLater.getTime());
     }
 
+    public static boolean isInRange(String dateStr, String from, String to) {
+        Date eventDate = parse(dateStr);
+        if (eventDate == null) return false;
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        try {
+            if (from != null && !from.isEmpty()) {
+                Date fromDate = df.parse(from);
+                if (fromDate != null && eventDate.before(fromDate)) return false;
+            }
+            if (to != null && !to.isEmpty()) {
+                Date toDate = df.parse(to);
+                if (toDate != null && eventDate.after(toDate)) return false;
+            }
+        } catch (ParseException e) {
+            return true; // If we can't parse filters, don't exclude the event
+        }
+        return true;
+    }
+
     private static Date parse(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return null;
 

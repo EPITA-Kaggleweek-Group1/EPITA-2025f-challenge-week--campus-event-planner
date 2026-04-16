@@ -87,7 +87,8 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:layout_marginBottom="56dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/eventsRecyclerView"
@@ -128,6 +129,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="#FFFFFF"
+            app:menu="@menu/bottom_nav_menu" />
 
     </RelativeLayout>
 
