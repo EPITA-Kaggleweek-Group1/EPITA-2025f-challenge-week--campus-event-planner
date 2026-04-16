@@ -2,7 +2,9 @@ package com.epita.eventplanner;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -76,20 +78,52 @@ public class EventDetailActivity extends AppCompatActivity {
     private void showRegisterDialog() {
         DialogRegisterBinding dialogBinding = DialogRegisterBinding.inflate(getLayoutInflater());
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.register_title)
                 .setView(dialogBinding.getRoot())
-                .setPositiveButton(R.string.submit, (dialog, which) -> {
-                    String name = dialogBinding.editName.getText().toString();
-                    String email = dialogBinding.editEmail.getText().toString();
-                    if (!name.isEmpty() && !email.isEmpty()) {
-                        submitRegistration(name, email);
-                    } else {
-                        Toast.makeText(this, R.string.error_fill_fields, Toast.LENGTH_SHORT).show();
-                    }
-                })
+                .setPositiveButton(R.string.submit, null) // Set to null first to override closing behavior
                 .setNegativeButton(R.string.cancel, null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String name = dialogBinding.editName.getText().toString().trim();
+                String email = dialogBinding.editEmail.getText().toString().trim();
+
+                boolean isValid = true;
+
+                // 1. Validate Name
+                if (name.isEmpty()) {
+                    dialogBinding.layoutName.setError("Name is required");
+                    isValid = false;
+                } else if (name.length() < 2) {
+                    dialogBinding.layoutName.setError("Name is too short");
+                    isValid = false;
+                } else {
+                    dialogBinding.layoutName.setError(null);
+                }
+
+                // 2. Validate Email
+                if (email.isEmpty()) {
+                    dialogBinding.layoutEmail.setError("Email is required");
+                    isValid = false;
+                } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    dialogBinding.layoutEmail.setError("Invalid email format");
+                    isValid = false;
+                } else {
+                    dialogBinding.layoutEmail.setError(null);
+                }
+
+                // 3. Submit if valid
+                if (isValid) {
+                    submitRegistration(name, email);
+                    dialog.dismiss();
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private void submitRegistration(String name, String email) {
@@ -111,7 +145,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         message = errorJson.getString("error");
                     }
                 } catch (Exception ignored) {}
-                
+
                 final String displayMessage = message;
                 runOnUiThread(() -> Toast.makeText(this, getString(R.string.registration_failed) + ": " + displayMessage, Toast.LENGTH_LONG).show());
             } catch (Exception e) {
@@ -142,12 +176,9 @@ public class EventDetailActivity extends AppCompatActivity {
     private void populateUI(Event event) {
         binding.eventDetailContent.detailTitle.setText(event.getTitle());
         binding.eventDetailContent.detailLocation.setText(event.getLocation());
-        binding.eventDetailContent.detailDescription.setText(
-                event.getDescription());
-        binding.eventDetailContent.detailCapacity.setText(
-                getString(R.string.capacity_format, event.getCapacity()));
-        binding.eventDetailContent.detailDate.setText(
-                DateUtils.formatToHuman(event.getDate()));
+        binding.eventDetailContent.detailDescription.setText(event.getDescription());
+        binding.eventDetailContent.detailCapacity.setText(getString(R.string.capacity_format, event.getCapacity()));
+        binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
 
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
