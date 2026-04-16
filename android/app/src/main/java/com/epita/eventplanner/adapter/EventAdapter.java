@@ -6,12 +6,9 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.epita.eventplanner.R;
+import com.epita.eventplanner.databinding.ItemEventBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
 
@@ -56,27 +54,30 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_event, parent, false);
-        return new EventViewHolder(view);
+        ItemEventBinding binding = ItemEventBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new EventViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
-        holder.titleText.setText(event.getTitle());
-        holder.dateText.setText(DateUtils.formatToHuman(event.getDate()));
-        holder.locationText.setText(event.getLocation());
-        holder.capacityText.setText("Capacity: " + event.getCapacity());
+        ItemEventBinding b = holder.binding;
+
+        b.eventTextInclude.eventTitle.setText(event.getTitle());
+        b.eventTextInclude.eventDate.setText(DateUtils.formatToHuman(event.getDate()));
+        b.eventTextInclude.eventLocation.setText(event.getLocation());
+        b.eventTextInclude.eventCapacity.setText(
+                holder.itemView.getContext().getString(R.string.capacity_format_main, event.getRegistrationCount(), event.getCapacity())
+        );
 
         // Default state (Light)
         resetToDefaultState(holder);
 
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            holder.eventImage.setVisibility(View.VISIBLE);
-            holder.eventImageMask.setVisibility(View.VISIBLE);
-            
+            b.eventImageInclude.eventImage.setVisibility(View.VISIBLE);
+            b.eventImageInclude.eventImageMask.setVisibility(View.VISIBLE);
+
             Glide.with(holder.itemView.getContext())
                     .asBitmap()
                     .load(imageUrl)
@@ -84,18 +85,18 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            holder.eventImage.setImageBitmap(resource);
+                            b.eventImageInclude.eventImage.setImageBitmap(resource);
                             analyzeImageColor(resource, holder);
                         }
 
                         @Override
                         public void onLoadCleared(@Nullable Drawable placeholder) {
-                            holder.eventImage.setImageDrawable(placeholder);
+                            b.eventImageInclude.eventImage.setImageDrawable(placeholder);
                         }
                     });
         } else {
-            holder.eventImage.setVisibility(View.GONE);
-            holder.eventImageMask.setVisibility(View.GONE);
+            b.eventImageInclude.eventImage.setVisibility(View.GONE);
+            b.eventImageInclude.eventImageMask.setVisibility(View.GONE);
         }
 
         holder.itemView.setOnClickListener(v -> {
@@ -106,12 +107,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     private void resetToDefaultState(EventViewHolder holder) {
-        holder.cardView.setCardBackgroundColor(Color.WHITE);
-        holder.titleText.setTextColor(Color.parseColor("#212121"));
-        holder.dateText.setTextColor(Color.parseColor("#757575"));
-        holder.locationText.setTextColor(Color.parseColor("#757575"));
-        holder.capacityText.setTextColor(Color.parseColor("#9E9E9E"));
-        holder.eventImageMask.setBackgroundResource(R.drawable.fade_mask);
+        ItemEventBinding b = holder.binding;
+        b.getRoot().setCardBackgroundColor(Color.WHITE);
+        b.eventTextInclude.eventTitle.setTextColor(Color.parseColor("#212121"));
+        b.eventTextInclude.eventDate.setTextColor(Color.parseColor("#757575"));
+        b.eventTextInclude.eventLocation.setTextColor(Color.parseColor("#757575"));
+        b.eventTextInclude.eventCapacity.setTextColor(Color.parseColor("#9E9E9E"));
+        b.eventImageInclude.eventImageMask.setBackgroundResource(R.drawable.fade_mask);
     }
 
     private void analyzeImageColor(Bitmap bitmap, EventViewHolder holder) {
@@ -135,12 +137,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     private void applyDarkState(EventViewHolder holder) {
-        holder.cardView.setCardBackgroundColor(Color.parseColor("#121212"));
-        holder.titleText.setTextColor(Color.WHITE);
-        holder.dateText.setTextColor(Color.parseColor("#BDBDBD"));
-        holder.locationText.setTextColor(Color.parseColor("#BDBDBD"));
-        holder.capacityText.setTextColor(Color.parseColor("#9E9E9E"));
-        holder.eventImageMask.setBackgroundResource(R.drawable.fade_mask_dark);
+        ItemEventBinding b = holder.binding;
+        b.getRoot().setCardBackgroundColor(Color.parseColor("#121212"));
+        b.eventTextInclude.eventTitle.setTextColor(Color.WHITE);
+        b.eventTextInclude.eventDate.setTextColor(Color.parseColor("#BDBDBD"));
+        b.eventTextInclude.eventLocation.setTextColor(Color.parseColor("#BDBDBD"));
+        b.eventTextInclude.eventCapacity.setTextColor(Color.parseColor("#9E9E9E"));
+        b.eventImageInclude.eventImageMask.setBackgroundResource(R.drawable.fade_mask_dark);
     }
 
     @Override
@@ -152,23 +155,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * ViewHolder for a single event card.
      */
     static class EventViewHolder extends RecyclerView.ViewHolder {
-        CardView cardView;
-        TextView titleText;
-        TextView dateText;
-        TextView locationText;
-        TextView capacityText;
-        ImageView eventImage;
-        View eventImageMask;
+        ItemEventBinding binding;
 
-        EventViewHolder(@NonNull View itemView) {
-            super(itemView);
-            cardView = (CardView) itemView;
-            titleText = itemView.findViewById(R.id.eventTitle);
-            dateText = itemView.findViewById(R.id.eventDate);
-            locationText = itemView.findViewById(R.id.eventLocation);
-            capacityText = itemView.findViewById(R.id.eventCapacity);
-            eventImage = itemView.findViewById(R.id.eventImage);
-            eventImageMask = itemView.findViewById(R.id.eventImageMask);
+        EventViewHolder(ItemEventBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }

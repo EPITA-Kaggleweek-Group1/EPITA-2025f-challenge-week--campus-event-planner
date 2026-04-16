@@ -16,6 +16,7 @@ public class Event {
     private String date;
     private String location;
     private int capacity;
+    private int registrationCount;
     private String imageUrl;
     private String createdAt;
 
@@ -62,6 +63,9 @@ public class Event {
 
     public int getCapacity() { return capacity; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
+
+    public int getRegistrationCount() { return registrationCount; }
+    public void setRegistrationCount(int registrationCount) { this.registrationCount = registrationCount; }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }

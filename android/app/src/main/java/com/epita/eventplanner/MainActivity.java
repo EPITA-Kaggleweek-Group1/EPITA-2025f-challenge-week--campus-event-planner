@@ -54,7 +54,18 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 List<Event> events = new ArrayList<>();
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
-                    events.add(Event.fromJson(obj));
+                    Event event = Event.fromJson(obj);
+                    
+                    // Fetch registration count for each event
+                    try {
+                        String countResponse = ApiClient.fetchJson("/events/" + event.getId() + "/registrations/count");
+                        JSONObject countObject = new JSONObject(countResponse);
+                        event.setRegistrationCount(countObject.getInt("count"));
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to load count for event " + event.getId(), e);
+                    }
+                    
+                    events.add(event);
                 }
 
                 runOnUiThread(() -> {
@@ -91,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         binding.errorLayout.errorView.setVisibility(View.VISIBLE);
         binding.mainContent.setVisibility(View.GONE);
     }
- 
+
     @Override
     public void onEventClick(Event event) {
         Intent intent = new Intent(this, EventDetailActivity.class);

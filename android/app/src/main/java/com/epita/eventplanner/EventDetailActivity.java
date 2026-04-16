@@ -60,8 +60,12 @@ public class EventDetailActivity extends AppCompatActivity {
                 JSONObject jsonObject = new JSONObject(jsonResponse);
                 Event event = Event.fromJson(jsonObject);
 
+                String countResponse = ApiClient.fetchJson("/events/" + id + "/registrations/count");
+                JSONObject countObject = new JSONObject(countResponse);
+                int count = countObject.getInt("count");
+
                 runOnUiThread(() -> {
-                    populateUI(event);
+                    populateUI(event, count);
                     showContent();
                     binding.swipeRefreshLayout.setRefreshing(false);
                 });
@@ -81,7 +85,7 @@ public class EventDetailActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.register_title)
                 .setView(dialogBinding.getRoot())
-                .setPositiveButton(R.string.submit, null) // Set to null first to override closing behavior
+                .setPositiveButton(R.string.submit, null)
                 .setNegativeButton(R.string.cancel, null)
                 .create();
 
@@ -93,18 +97,13 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 boolean isValid = true;
 
-                // 1. Validate Name
                 if (name.isEmpty()) {
                     dialogBinding.layoutName.setError("Name is required");
-                    isValid = false;
-                } else if (name.length() < 2) {
-                    dialogBinding.layoutName.setError("Name is too short");
                     isValid = false;
                 } else {
                     dialogBinding.layoutName.setError(null);
                 }
 
-                // 2. Validate Email
                 if (email.isEmpty()) {
                     dialogBinding.layoutEmail.setError("Email is required");
                     isValid = false;
@@ -115,7 +114,6 @@ public class EventDetailActivity extends AppCompatActivity {
                     dialogBinding.layoutEmail.setError(null);
                 }
 
-                // 3. Submit if valid
                 if (isValid) {
                     submitRegistration(name, email);
                     dialog.dismiss();
@@ -135,7 +133,10 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 ApiClient.postJson("/events/" + eventId + "/register", json.toString());
 
-                runOnUiThread(() -> Toast.makeText(this, R.string.registration_success, Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(this, R.string.registration_success, Toast.LENGTH_LONG).show();
+                    loadEventDetails(eventId); // Refresh to update count
+                });
             } catch (ApiClient.ApiException e) {
                 Log.e(TAG, "Registration failed", e);
                 String message = e.getResponseBody();
@@ -173,11 +174,12 @@ public class EventDetailActivity extends AppCompatActivity {
         binding.actualContent.setVisibility(View.GONE);
     }
 
-    private void populateUI(Event event) {
+    private void populateUI(Event event, int registrationCount) {
         binding.eventDetailContent.detailTitle.setText(event.getTitle());
         binding.eventDetailContent.detailLocation.setText(event.getLocation());
         binding.eventDetailContent.detailDescription.setText(event.getDescription());
-        binding.eventDetailContent.detailCapacity.setText(getString(R.string.capacity_format, event.getCapacity()));
+        binding.eventDetailContent.detailCapacity.setText(
+                getString(R.string.capacity_format_detail, registrationCount, event.getCapacity()));
         binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
 
         String imageUrl = event.getImageUrl();

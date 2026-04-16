@@ -15,6 +15,7 @@
 
         <!-- Background Image Layout -->
         <include
+            android:id="@+id/eventImageInclude"
             layout="@layout/layout_event_image_faded"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -25,6 +26,7 @@
 
         <!-- Foreground Content -->
         <include
+            android:id="@+id/eventTextInclude"
             layout="@layout/layout_event_text_content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
