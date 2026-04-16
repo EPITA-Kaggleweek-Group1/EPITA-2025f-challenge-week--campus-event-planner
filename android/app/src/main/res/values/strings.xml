@@ -19,6 +19,7 @@
     <string name="registration_success">Registration Successful!</string>
     <string name="registration_failed">Registration Failed</string>
     <string name="registration_header">Event Registration</string>
+    <string name="event_full">This event is full</string>
     <string name="hint_full_name">Full Name</string>
     <string name="hint_email">Email Address</string>
 </resources>
