@@ -23,6 +23,7 @@ from models import (
     registration_create,
     registration_get_all,
 )
+from service import service_search_events
 
 
 def register_events_routes(app):
@@ -146,14 +147,9 @@ def register_events_routes(app):
     def search_events():
         query = request.args.get("q", "")
         conn = app.db.get_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(
-            f"SELECT * FROM events WHERE title LIKE '%{query}%' OR description LIKE '%{query}%' ORDER BY date"
-        )
-        results = cursor.fetchall()
-        cursor.close()
+        results = service_search_events(conn, query)
         conn.close()
-        return jsonify(results)
+        return jsonify(results), 200
 
     @app.route("/events/<int:event_id>/registrations", methods=["DELETE"])
     def delete_registration(event_id):
