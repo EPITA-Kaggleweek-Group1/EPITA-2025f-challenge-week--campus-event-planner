@@ -143,17 +143,8 @@ def registration_create(
             raise EventNotFoundError()
 
         # TODO: We need to have wrapper
-        event_capacity = event["capacity"]  # type: ignore
-        cursor.execute(
-            "SELECT COUNT(*) AS count FROM registrations WHERE event_id = %s",
-            (event_id,),
-        )
-
-        row = cursor.fetchone()
-        if row is None:
-            # TODO: Make this into an error.
-            raise RuntimeError("COUNT query returned no result")
-        registration_count = row["count"]  # type: ignore
+        event_capacity = int(event["capacity"])
+        registration_count = _get_registration_count(cursor, event_id)
 
         if registration_count >= event_capacity:
             raise EventFullError()
@@ -181,3 +172,29 @@ def registration_create(
 
     finally:
         cursor.close()
+
+
+def registration_get_count(
+    conn: MySQLConnectionAbstract | PooledMySQLConnection, event_id
+) -> int:
+
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id FROM events WHERE id = %s", (event_id,))
+    event = cursor.fetchone()
+    if not event:
+        raise EventNotFoundError()
+    count = _get_registration_count(cursor, event_id)
+    cursor.close()
+    return count
+
+
+def _get_registration_count(cursor, event_id: int) -> int:
+    cursor.execute(
+        "SELECT COUNT(*) AS count FROM registrations WHERE event_id = %s",
+        (event_id,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        raise RuntimeError("COUNT query returned no result")
+
+    return int(row["count"])
