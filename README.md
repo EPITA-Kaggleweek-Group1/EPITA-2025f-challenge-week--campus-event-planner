@@ -343,8 +343,8 @@ Create a new registration
 | CEPN-S020 | [Mobile] Availability indicator on list cards       | ✅      |
 | CEPN-S021 | [API] Search param on GET /events (LIKE title/desc) | ✅      |
 | CEPN-S022 | [API] date_from/date_to params                      | ✅      |
-| CEPN-S023 | [API] Combine search + date filters, ORDER BY date  |        |
-| CEPN-S024 | [Mobile] Search bar with 300ms debounce             |        |
+| CEPN-S023 | [API] Combine search + date filters, ORDER BY date  | ✅      |
+| CEPN-S024 | [Mobile] Search bar with 300ms debounce             | ✅      |
 | CEPN-S025 | [Mobile] Date filter chips: Today/Week/Month/All    |        |
 
 ### Advanced (26-35)
