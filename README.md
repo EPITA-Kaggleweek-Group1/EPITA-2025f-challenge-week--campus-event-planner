@@ -356,7 +356,7 @@ Create a new registration
 | CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) | ✅      |
 | CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              | ✅      |
 | CEPN-S030 | [Mobile] Favorites screen in navigation                    | ✅      |
-| CEPN-S031 | [Mobile] Favorites persist across restart                  |        |
+| CEPN-S031 | [Mobile] Favorites persist across restart                  | ✅      |
 | CEPN-S032 | [API] Pagination: page + limit params, total_count         | ✅      |
 | CEPN-S033 | [Mobile] Infinite scroll with loading indicator            | ✅      |
 | CEPN-S034 | [Mobile] Pull-to-refresh on event list                     | ✅      |
@@ -368,8 +368,8 @@ Create a new registration
 | --------- | ------------------------------------------------ | ------ |
 | CEPN-S036 | [Mobile] Share button (title + date + location)  |        |
 | CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          |        |
-| CEPN-S038 | [Mobile] Location as secondary text on cards     |        |
-| CEPN-S039 | [Mobile] Past Events section/toggle              |        |
+| CEPN-S038 | [Mobile] Location as secondary text on cards     | ✅      |
+| CEPN-S039 | [Mobile] Past Events section/toggle              | ✅      |
 | CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape |        |
 
 ## CS TODOs (30)
