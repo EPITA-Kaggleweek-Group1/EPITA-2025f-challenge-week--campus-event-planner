@@ -2,6 +2,10 @@ package com.epita.eventplanner;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
@@ -16,6 +20,7 @@ import com.epita.eventplanner.model.Event;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +29,9 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private static final String TAG = "MainActivity";
     private ActivityMainBinding binding;
     private EventAdapter adapter;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+    private String currentQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,25 +39,53 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.swipeRefreshLayout.setOnRefreshListener(this::loadEvents);
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> loadEvents(currentQuery));
         binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_events)));
-        binding.errorLayout.retryButton.setOnClickListener(v -> loadEvents());
+        binding.errorLayout.retryButton.setOnClickListener(v -> loadEvents(currentQuery));
 
         binding.eventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new EventAdapter(this);
         binding.eventsRecyclerView.setAdapter(adapter);
 
-        loadEvents();
+        setupSearch();
+        loadEvents("");
     }
 
-    private void loadEvents() {
-        if (!binding.swipeRefreshLayout.isRefreshing()) {
+    private void setupSearch() {
+        binding.searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                currentQuery = s.toString().trim();
+                searchRunnable = () -> loadEvents(currentQuery);
+                searchHandler.postDelayed(searchRunnable, 300);
+            }
+        });
+    }
+
+    private void loadEvents(String query) {
+        // Only show full-screen loading if the list is empty and we're not searching
+        if (!binding.swipeRefreshLayout.isRefreshing() && adapter.getItemCount() == 0) {
             showLoading();
         }
 
         new Thread(() -> {
             try {
-                String json = ApiClient.fetchJson("/events");
+                String path = "/events";
+                if (query != null && !query.isEmpty()) {
+                    path += "?search=" + URLEncoder.encode(query, "UTF-8");
+                }
+                
+                String json = ApiClient.fetchJson(path);
                 JSONArray array = new JSONArray(json);
                 List<Event> events = new ArrayList<>();
                 for (int i = 0; i < array.length(); i++) {
@@ -88,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private void showLoading() {
         binding.loadingSpinner.setVisibility(View.VISIBLE);
         binding.errorLayout.errorView.setVisibility(View.GONE);
-        binding.mainContent.setVisibility(View.GONE);
+        // Do not hide mainContent to avoid search bar blinking
     }
 
     private void showContent() {
