@@ -1,6 +1,7 @@
 package com.epita.eventplanner;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,32 +33,36 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private TextView emptyStateView;
     private List<Event> allEventsMasterList = new ArrayList<>();
 
+    // To prevent the app from filtering too fast while typing
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Views
+        // UI Initialization
         searchBar = findViewById(R.id.searchEditText);
         filterChipGroup = findViewById(R.id.filterChipGroup);
         emptyStateView = findViewById(R.id.emptyStateView);
         RecyclerView rv = findViewById(R.id.eventsRecyclerView);
 
-        // Setup RecyclerView
         rv.setLayoutManager(new LinearLayoutManager(this));
-
-        // FIX: Passing two arguments: (Context, Listener)
         adapter = new EventAdapter(this, this);
         rv.setAdapter(adapter);
 
-        // Search Listener
+        // Search logic with "Debounce" (the 300ms delay)
         searchBar.addTextChangedListener(new TextWatcher() {
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { applyFilters(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (searchRunnable != null) searchHandler.removeCallbacks(searchRunnable);
+                searchRunnable = () -> applyFilters();
+                searchHandler.postDelayed(searchRunnable, 300);
+            }
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Chip Filter Listener
         filterChipGroup.setOnCheckedChangeListener((group, checkedId) -> applyFilters());
 
         fetchAllEventsFromServer();
@@ -78,8 +83,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Server Connection Failed", Toast.LENGTH_SHORT).show();
-                    emptyStateView.setText("Error connecting to server");
+                    emptyStateView.setText("Failed to load events. Check connection.");
                     emptyStateView.setVisibility(View.VISIBLE);
                 });
             }
@@ -89,20 +93,20 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private void applyFilters() {
         String query = searchBar.getText().toString().toLowerCase().trim();
         int checkedChipId = filterChipGroup.getCheckedChipId();
-        android.content.SharedPreferences prefs = getSharedPreferences("EventPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("EventPrefs", MODE_PRIVATE);
 
         List<Event> filteredList = new ArrayList<>();
 
         for (Event event : allEventsMasterList) {
-            // Search logic
+            // 1. Search Filter
             boolean matchesSearch = query.isEmpty() ||
                     event.getTitle().toLowerCase().contains(query) ||
                     event.getLocation().toLowerCase().contains(query);
 
-            // Date logic
+            // 2. Date Filter
             boolean matchesDate = matchesDateFilter(event, checkedChipId);
 
-            // Favorite logic (if Favorite chip is selected)
+            // 3. Favorites Filter
             boolean matchesFav = true;
             if (checkedChipId == R.id.chipFavorites) {
                 matchesFav = prefs.getBoolean("fav_" + event.getId(), false);
@@ -113,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
             }
         }
 
-        // Toggle Empty State
+        // Toggle the "No Events Found" message
         if (filteredList.isEmpty()) {
             emptyStateView.setVisibility(View.VISIBLE);
         } else {
@@ -124,11 +128,14 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     }
 
     private boolean matchesDateFilter(Event event, int chipId) {
+        // If "All" or "Favorites" is selected, don't filter by date
         if (chipId == R.id.chipAll || chipId == -1 || chipId == R.id.chipFavorites) return true;
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
             Date eventDate = sdf.parse(event.getDate());
+            if (eventDate == null) return true;
+
             Calendar now = Calendar.getInstance();
             Calendar eCal = Calendar.getInstance();
             eCal.setTime(eventDate);
@@ -143,7 +150,9 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 return now.get(Calendar.YEAR) == eCal.get(Calendar.YEAR) &&
                         now.get(Calendar.MONTH) == eCal.get(Calendar.MONTH);
             }
-        } catch (Exception e) { return true; }
+        } catch (Exception e) {
+            return true;
+        }
         return true;
     }
 
@@ -154,11 +163,14 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         startActivity(intent);
     }
 
-    // FIX: Implementing the missing Favorite Toggle method
     @Override
     public void onFavoriteToggle() {
-        // If we are currently looking at the "Favorites" filter,
-        // we need to re-apply filters so the item disappears immediately.
-        applyFilters();
+        applyFilters(); // Re-run filter if we are currently in the Favorites tab
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        applyFilters(); // Catch updates made in the Detail screen
     }
 }

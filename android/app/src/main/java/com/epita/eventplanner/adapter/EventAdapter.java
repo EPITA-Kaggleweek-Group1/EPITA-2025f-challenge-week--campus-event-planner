@@ -56,48 +56,47 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
         holder.titleText.setText(event.getTitle());
-        holder.dateText.setText(event.getDate());
+        holder.dateText.setText(event.getDate().split("T")[0]);
         holder.locationText.setText(event.getLocation());
 
-        // Setup Favorite Icon
+        // --- FAVORITE LOGIC ---
         boolean isFav = prefs.getBoolean("fav_" + event.getId(), false);
+        // Uses Android system icons: big_on (filled) and big_off (outline)
         holder.favBtn.setImageResource(isFav ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
 
         holder.favBtn.setOnClickListener(v -> {
-            boolean current = prefs.getBoolean("fav_" + event.getId(), false);
-            prefs.edit().putBoolean("fav_" + event.getId(), !current).apply();
+            boolean currentStatus = prefs.getBoolean("fav_" + event.getId(), false);
+            prefs.edit().putBoolean("fav_" + event.getId(), !currentStatus).apply();
             notifyItemChanged(position);
             if (listener != null) listener.onFavoriteToggle();
         });
 
-        // Availability Logic
-        holder.statusText.setText("Checking...");
+        // --- AVAILABILITY LOGIC ---
+        holder.statusText.setText("...");
         executorService.execute(() -> {
             try {
                 String rJson = ApiClient.fetchJson("/events/" + event.getId() + "/registrations");
                 int regCount = new JSONArray(rJson).length();
                 int remaining = event.getCapacity() - regCount;
-                mainHandler.post(() -> updateStatusUI(holder, remaining));
+                mainHandler.post(() -> {
+                    if (remaining <= 0) {
+                        holder.statusText.setText("SOLD OUT");
+                        holder.statusText.setTextColor(Color.RED);
+                        setCircleColor(holder.indicator, Color.RED);
+                    } else {
+                        holder.statusText.setText("Available");
+                        holder.statusText.setTextColor(Color.parseColor("#2E7D32"));
+                        setCircleColor(holder.indicator, Color.parseColor("#2E7D32"));
+                    }
+                });
             } catch (Exception e) {
-                mainHandler.post(() -> holder.statusText.setText("Status unknown"));
+                mainHandler.post(() -> holder.statusText.setText(""));
             }
         });
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onEventClick(event);
         });
-    }
-
-    private void updateStatusUI(EventViewHolder holder, int remaining) {
-        if (remaining <= 0) {
-            holder.statusText.setText("SOLD OUT");
-            holder.statusText.setTextColor(Color.RED);
-            setCircleColor(holder.indicator, Color.RED);
-        } else {
-            holder.statusText.setText("Available");
-            holder.statusText.setTextColor(Color.parseColor("#2E7D32"));
-            setCircleColor(holder.indicator, Color.parseColor("#2E7D32"));
-        }
     }
 
     private void setCircleColor(View v, int color) {
