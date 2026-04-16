@@ -349,16 +349,60 @@ class TestGetRegistrationsCount:
 class TestSearch:
     """Search and filter (NOT YET IMPLEMENTED)."""
 
-    @pytest.mark.xfail(reason="Search endpoint not implemented yet")
     def test_event_search(self, client):
         """GET /events?search=test should filter events by keyword."""
+
         response = client.get("/events?search=Test")
         assert response.status_code == 200
+
         data = response.get_json()
         assert isinstance(data, list)
-        # All returned events should contain 'Test' in the title
+
+        # All returned events should match search in at least one field
+        for event in data:
+            assert (
+                "test" in event["title"].lower()
+                or "test" in event["description"].lower()
+                or "test" in event["location"].lower()
+            )
+
+    def test_event_search(self, client):
+        """GET /events?search=test should filter events by keyword."""
+
+        response = client.get("/events?title=Test")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+
+        # All returned events should match search in at least one field
         for event in data:
             assert "test" in event["title"].lower()
+
+    def test_event_search_by_description(self, client):
+        """GET /events?description=... should filter by description."""
+
+        response = client.get("/events?description=Testing")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+
+        for event in data:
+            assert "testing" in event["description"].lower()
+
+    def test_event_search_by_title_and_description(self, client):
+        """GET /events?title=...&description=... should apply AND filter."""
+
+        response = client.get("/events?title=test&description=event")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+
+        for event in data:
+            assert "test" in event["title"].lower()
+            assert "event" in event["description"].lower()
 
     def test_event_search_sql_inject_97(self, client):
         """
@@ -366,19 +410,17 @@ class TestSearch:
         https://github.com/EPITA-Kaggleweek-Group1/EPITA-2025f-challenge-week--campus-event-planner/issues/97
         GET /events/search?q=%' UNION SELECT table_name,2,3,4,5,6,7,8 FROM information_schema.tables-- -
         """
+        malicious_queries = [
+            "%' UNION SELECT table_name,2,3,4,5,6,7,8 FROM information_schema.tables-- -",
+            "%' UNION SELECT user_name,email,3,4,5,6,7,8 FROM registrations-- -",
+        ]
 
-        response = client.get(
-            "/events/search?q=%' UNION SELECT table_name,2,3,4,5,6,7,8 FROM information_schema.tables-- -"
-        )
-        assert response.status_code == 200
-        data = response.get_json()
-        assert isinstance(data, list)
-        assert len(data) == 0  # No result shoule be there
+        for q in malicious_queries:
+            response = client.get(f"/events?search={q}")
+            assert response.status_code == 200
 
-        response = client.get(
-            "/events/search?q=%' UNION SELECT user_name,email,3,4,5,6,7,8 FROM registrations-- -"
-        )
-        assert response.status_code == 200
-        data = response.get_json()
-        assert isinstance(data, list)
-        assert len(data) == 0  # There is no registration yet.
+            data = response.get_json()
+            assert isinstance(data, list)
+
+            # should not return any rows from injection
+            assert len(data) == 0

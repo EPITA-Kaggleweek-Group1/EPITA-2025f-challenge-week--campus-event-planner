@@ -24,7 +24,7 @@ from models import (
     registration_get_all,
     registration_get_count,
 )
-from service import service_search_events
+from service import service_filter_events
 
 
 def register_events_routes(app):
@@ -49,22 +49,49 @@ def register_events_routes(app):
     @app.route("/events", methods=["GET"])
     def list_events():
         """
-        Return all events as a JSON array.
+        Return all events as JSON array.
 
-        TODO (students): add query-parameter support for ?search= and ?date=
+        Supported filters:
+        - ?search= (title OR description OR location)
+        - ?title=
+        - ?description=
+        - ?date= (TODO later)
         """
+
+        search = request.args.get("search")
+        title = request.args.get("title")
+        description = request.args.get("description")
+
         conn = app.db.get_connection()
-        events = get_all_events(conn)
-        return jsonify(events), 200
+
+        try:
+            # no filters → return all
+            if not search and not title and not description:
+                events = get_all_events(conn)
+            else:
+                events = service_filter_events(
+                    conn,
+                    search=search,
+                    title=title,
+                    description=description,
+                )
+
+            return jsonify(events), 200
+
+        finally:
+            conn.close()
 
     @app.route("/events/<int:event_id>", methods=["GET"])
     def get_event(event_id):
         """Return a single event by ID, or 404 if it does not exist."""
         conn = app.db.get_connection()
         event = get_event_by_id(conn, event_id)
-        if event is None:
-            return jsonify({"error": "Event not found"}), 404
-        return jsonify(event), 200
+        try:
+            if event is None:
+                return jsonify({"error": "Event not found"}), 404
+            return jsonify(event), 200
+        finally:
+            conn.close()
 
     @app.route("/events", methods=["POST"])
     def add_event():
@@ -82,6 +109,7 @@ def register_events_routes(app):
             return jsonify({"error": "'title' and 'date' are required"}), 400
 
         event = create_event(conn, data)
+        conn.close()
         return jsonify(event), 201
 
     # --------------------------------------------------------------------------- #
@@ -159,14 +187,6 @@ def register_events_routes(app):
     # --------------------------------------------------------------------------- #
     #  Run
     # --------------------------------------------------------------------------- #
-
-    @app.route("/events/search")
-    def search_events():
-        query = request.args.get("q", "")
-        conn = app.db.get_connection()
-        results = service_search_events(conn, query)
-        conn.close()
-        return jsonify(results), 200
 
     @app.route("/events/<int:event_id>/registrations", methods=["DELETE"])
     def delete_registration(event_id):
