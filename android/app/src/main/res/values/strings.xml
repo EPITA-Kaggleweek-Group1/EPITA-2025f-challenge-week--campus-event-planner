@@ -19,7 +19,7 @@
     <string name="registration_success">Registration Successful!</string>
     <string name="registration_failed">Registration Failed</string>
     <string name="registration_header">Event Registration</string>
-    <string name="no_events_found">No events matching the filter</string>
+    <string name="no_events_found">No events found</string>
     <string name="event_full">This event is full</string>
     <string name="event_passed">This event has passed</string>
     <string name="status_passed">PASSED</string>
