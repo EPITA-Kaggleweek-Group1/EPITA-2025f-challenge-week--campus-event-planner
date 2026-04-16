@@ -55,7 +55,7 @@ def register_events_routes(app):
         - ?title=
         - ?description=
         - ?date_from=
-        - ?date_to=
+        - ?date_to= (exclusive)
         - ?order="asc" | "desc" (default)
         """
         search = request.args.get("search")

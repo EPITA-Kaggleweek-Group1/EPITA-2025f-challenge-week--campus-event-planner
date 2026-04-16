@@ -40,7 +40,7 @@ def service_filter_events(
         params.append(date_from)
 
     if date_to:
-        conditions.append("date <= %s")
+        conditions.append("date < %s")
         params.append(date_to)
 
     # order filter

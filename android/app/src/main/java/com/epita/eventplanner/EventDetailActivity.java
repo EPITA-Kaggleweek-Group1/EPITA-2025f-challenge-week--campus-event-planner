@@ -224,12 +224,19 @@ public class EventDetailActivity extends AppCompatActivity {
 
         updateCapacityIndicator(registrationCount, event.getCapacity());
 
-        if (registrationCount >= event.getCapacity()) {
+        boolean passed = DateUtils.isPast(event.getDate());
+        if (passed) {
+            binding.registerButton.setVisibility(View.GONE);
+            binding.eventFullNote.setVisibility(View.GONE);
+            binding.eventPassedNote.setVisibility(View.VISIBLE);
+        } else if (registrationCount >= event.getCapacity()) {
             binding.registerButton.setVisibility(View.GONE);
             binding.eventFullNote.setVisibility(View.VISIBLE);
+            binding.eventPassedNote.setVisibility(View.GONE);
         } else {
             binding.registerButton.setVisibility(View.VISIBLE);
             binding.eventFullNote.setVisibility(View.GONE);
+            binding.eventPassedNote.setVisibility(View.GONE);
         }
 
         String imageUrl = event.getImageUrl();

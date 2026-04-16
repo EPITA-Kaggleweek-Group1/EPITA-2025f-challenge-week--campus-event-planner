@@ -7,15 +7,37 @@
     android:padding="16dp">
 
     <!-- Event title -->
-    <TextView
-        android:id="@+id/eventTitle"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="6dp"
-        android:textColor="#212121"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        tools:text="Annual Tech Symposium" />
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/eventTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/eventStatusLabel"
+            android:textColor="#212121"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="Annual Tech Symposium" />
+
+        <TextView
+            android:id="@+id/eventStatusLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="#757575"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="TODAY"
+            tools:visibility="visible" />
+    </RelativeLayout>
 
     <!-- Date -->
     <TextView
