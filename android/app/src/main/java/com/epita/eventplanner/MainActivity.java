@@ -9,6 +9,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -31,6 +32,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements EventAdapter.OnEventClickListener {
 
     private static final String TAG = "MainActivity";
+    private static final int PAGE_SIZE = 10;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private ActivityMainBinding binding;
     private EventAdapter adapter;
@@ -38,6 +40,9 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private String currentQuery = "";
     private String dateFrom = "";
     private String dateTo = "";
+    private int currentOffset = 0;
+    private boolean isLoading = false;
+    private boolean hasMore = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,17 +50,53 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.swipeRefreshLayout.setOnRefreshListener(() -> loadEvents(currentQuery, dateFrom, dateTo));
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> {
+            resetPagination();
+            loadEvents(currentQuery, dateFrom, dateTo);
+        });
         binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_events)));
-        binding.errorLayout.retryButton.setOnClickListener(v -> loadEvents(currentQuery, dateFrom, dateTo));
+        binding.errorLayout.retryButton.setOnClickListener(v -> {
+            resetPagination();
+            loadEvents(currentQuery, dateFrom, dateTo);
+        });
 
-        binding.eventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.eventsRecyclerView.setLayoutManager(layoutManager);
         adapter = new EventAdapter(this);
         binding.eventsRecyclerView.setAdapter(adapter);
 
+        binding.eventsRecyclerView.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) { // check for scroll down
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+
+                    if (!isLoading && hasMore) {
+                        if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                            loadEvents(currentQuery, dateFrom, dateTo);
+                        }
+                    }
+                }
+            }
+        });
+
         setupSearch();
         setupFilters();
-        loadEvents("", "", "");
+        
+        // Initialize dateFrom to today for the default "All" filter
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        dateFrom = df.format(Calendar.getInstance().getTime());
+        
+        loadEvents("", dateFrom, "");
+    }
+
+    private void resetPagination() {
+        currentOffset = 0;
+        hasMore = true;
+        adapter.clear();
     }
 
     private void setupFilters() {
@@ -82,12 +123,11 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
             } else if (checkedId == R.id.chipPast) {
                 dateFrom = "";
                 dateTo = today;
-                // Note: The API might need adjustments if it defaults to only showing future events.
-                // Assuming it filters strictly by date range if provided.
             } else {
-                dateFrom = "";
+                dateFrom = today;
                 dateTo = "";
             }
+            resetPagination();
             loadEvents(currentQuery, dateFrom, dateTo);
         });
     }
@@ -108,13 +148,19 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
             @Override
             public void afterTextChanged(Editable s) {
                 currentQuery = s.toString().trim();
-                searchRunnable = () -> loadEvents(currentQuery, dateFrom, dateTo);
+                searchRunnable = () -> {
+                    resetPagination();
+                    loadEvents(currentQuery, dateFrom, dateTo);
+                };
                 searchHandler.postDelayed(searchRunnable, 300);
             }
         });
     }
 
     private void loadEvents(String query, String from, String to) {
+        if (isLoading || !hasMore) return;
+        isLoading = true;
+
         // Only show full-screen loading if the list is empty and we're not searching
         if (!binding.swipeRefreshLayout.isRefreshing() && adapter.getItemCount() == 0) {
             showLoading();
@@ -125,9 +171,6 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 // Determine if we need to filter out past events manually
                 boolean filterOutPast = true;
                 if (to != null && !to.isEmpty()) {
-                    // If dateTo is provided and is not after 'now', we might be looking at past events specifically
-                    // Actually, if chipPast is selected, we want past events.
-                    // If dateTo == today (from chipPast), we want past.
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                     String today = df.format(cal.getTime());
@@ -146,14 +189,19 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 if (to != null && !to.isEmpty()) {
                     pathBuilder.append("date_to=").append(to).append("&");
                 }
+                pathBuilder.append("offset=").append(currentOffset).append("&");
+                pathBuilder.append("limit=").append(PAGE_SIZE);
 
                 String path = pathBuilder.toString();
-                if (path.endsWith("&") || path.endsWith("?")) {
-                    path = path.substring(0, path.length() - 1);
-                }
 
                 String json = ApiClient.fetchJson(path);
-                JSONArray array = new JSONArray(json);
+                JSONObject responseObj = new JSONObject(json);
+                JSONArray array = responseObj.getJSONArray("data");
+                JSONObject pagination = responseObj.getJSONObject("pagination");
+
+                hasMore = pagination.getBoolean("has_more");
+                currentOffset = pagination.getInt("next_offset");
+
                 List<Event> events = new ArrayList<>();
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
@@ -174,18 +222,19 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 }
 
                 runOnUiThread(() -> {
-                    adapter.setEvents(events);
-                    binding.emptyStateText.setVisibility(events.isEmpty() ? View.VISIBLE : View.GONE);
+                    adapter.addEvents(events);
+                    binding.emptyStateText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
                     showContent();
                     binding.swipeRefreshLayout.setRefreshing(false);
+                    isLoading = false;
                 });
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to load events", e);
                 runOnUiThread(() -> {
-                    adapter.setEvents(new ArrayList<>());
                     showError();
                     binding.swipeRefreshLayout.setRefreshing(false);
+                    isLoading = false;
                 });
             }
         }).start();

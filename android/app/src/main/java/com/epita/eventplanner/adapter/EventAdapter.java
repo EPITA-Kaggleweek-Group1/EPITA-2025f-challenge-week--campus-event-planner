@@ -40,7 +40,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * Replace the current dataset and refresh the list.
      */
     public void setEvents(List<Event> events) {
-        this.events = events;
+        this.events = new ArrayList<>(events);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Append new events to the current dataset.
+     */
+    public void addEvents(List<Event> newEvents) {
+        int startPosition = this.events.size();
+        this.events.addAll(newEvents);
+        notifyItemRangeInserted(startPosition, newEvents.size());
+    }
+
+    public void clear() {
+        this.events.clear();
         notifyDataSetChanged();
     }
 

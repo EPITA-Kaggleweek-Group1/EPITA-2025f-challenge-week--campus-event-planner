@@ -65,6 +65,10 @@ def register_events_routes(app):
         date_to = request.args.get("date_to")
         order = request.args.get("order", "asc")
 
+        limit = int(request.args.get("limit", 20))
+        offset = int(request.args.get("offset", 0))
+        limit = min(limit, 100)
+
         conn = app.db.get_connection()
 
         try:
@@ -76,6 +80,8 @@ def register_events_routes(app):
                 date_from=date_from,
                 date_to=date_to,
                 order=order,
+                limit=limit,
+                offset=offset,
             )
 
             return jsonify(events), 200

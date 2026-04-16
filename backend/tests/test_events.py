@@ -24,14 +24,14 @@ class TestListEvents:
         """The events endpoint should return a JSON array."""
         response = client.get("/events")
         assert response.status_code == 200
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) >= 2  # we seeded at least 2 events
 
     def test_events_contain_required_fields(self, client):
         """Each event object should include the core fields."""
         response = client.get("/events")
-        data = response.get_json()
+        data = response.get_json()["data"]
         event = data[0]
         for field in (
             "id",
@@ -403,7 +403,7 @@ class TestSearch:
         response = client.get("/events?search=Test")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
 
         # All returned events should match search in at least one field
@@ -414,13 +414,13 @@ class TestSearch:
                 or "test" in event["location"].lower()
             )
 
-    def test_event_search(self, client):
+    def test_event_search_by_title(self, client):
         """GET /events?search=test should filter events by keyword."""
 
         response = client.get("/events?title=Test")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
 
         # All returned events should match search in at least one field
@@ -433,7 +433,7 @@ class TestSearch:
         response = client.get("/events?description=Testing")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
 
         for event in data:
@@ -445,7 +445,7 @@ class TestSearch:
         response = client.get("/events?title=test&description=event")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
 
         for event in data:
@@ -467,7 +467,7 @@ class TestSearch:
             response = client.get(f"/events?search={q}")
             assert response.status_code == 200
 
-            data = response.get_json()
+            data = response.get_json()["data"]
             assert isinstance(data, list)
 
             # should not return any rows from injection
@@ -495,7 +495,7 @@ class TestSearch:
         response = client.get("/events?date_from=2026-06-01")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) > 0
 
@@ -523,7 +523,7 @@ class TestSearch:
         response = client.get("/events?date_to=2026-05-10")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) > 0
 
@@ -551,7 +551,7 @@ class TestSearch:
         response = client.get("/events?date_from=2026-05-01&date_to=2026-05-31")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) > 0
 
@@ -564,7 +564,7 @@ class TestSearch:
         response = client.get("/events")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) >= 2
 
@@ -578,7 +578,7 @@ class TestSearch:
         response = client.get("/events?order=desc")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) >= 2
 
@@ -591,7 +591,7 @@ class TestSearch:
         response = client.get("/events?order=asc")
         assert response.status_code == 200
 
-        data = response.get_json()
+        data = response.get_json()["data"]
         assert isinstance(data, list)
         assert len(data) >= 2
 
