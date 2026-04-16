@@ -43,7 +43,7 @@
         android:layout_marginBottom="16dp"
         android:textColor="#757575"
         android:textSize="16sp"
-        tools:text="Capacity: 150" />
+        tools:text="42 / 150 remaining" />
 
     <TextView
         android:id="@+id/detailDescription"

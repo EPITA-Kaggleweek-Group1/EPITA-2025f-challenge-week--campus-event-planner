@@ -44,6 +44,6 @@
         android:layout_height="wrap_content"
         android:textColor="#9E9E9E"
         android:textSize="13sp"
-        tools:text="Capacity: 150" />
+        tools:text="42 / 150 spots remaining" />
 
 </LinearLayout>
