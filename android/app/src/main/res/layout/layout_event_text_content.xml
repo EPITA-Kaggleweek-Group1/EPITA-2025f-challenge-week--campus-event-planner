@@ -90,14 +90,28 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Favorite icon at the bottom right corner -->
-    <ImageView
-        android:id="@+id/favoriteIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+    <!-- Share and Favorite icons at the bottom right corner -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:contentDescription="Toggle Favorite"
-        android:src="@drawable/ic_heart_outline" />
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/shareIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="Share Event"
+            android:src="@drawable/ic_share" />
+
+        <ImageView
+            android:id="@+id/favoriteIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Toggle Favorite"
+            android:src="@drawable/ic_heart_outline" />
+    </LinearLayout>
 
 </RelativeLayout>

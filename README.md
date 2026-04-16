@@ -366,11 +366,11 @@ Create a new registration
 
 | Code      | TODO                                             | Status |
 | --------- | ------------------------------------------------ | ------ |
-| CEPN-S036 | [Mobile] Share button (title + date + location)  |        |
+| CEPN-S036 | [Mobile] Share button (title + date + location)  | ✅      |
 | CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          | ✅      |
 | CEPN-S038 | [Mobile] Location as secondary text on cards     | ✅      |
 | CEPN-S039 | [Mobile] Past Events section/toggle              | ✅      |
-| CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape |        |
+| CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape | ✅      |
 
 ## CS TODOs (30)
 

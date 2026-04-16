@@ -82,7 +82,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         updateStatusLabel(b, event);
         updateCapacityIndicator(b, event);
-        updateFavoriteIcon(b, event);
+        updateFavoriteIcon(b, event, false);
+        setupShareButton(b, event);
 
         // Default state (Light)
         resetToDefaultState(holder);
@@ -159,14 +160,37 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     }
 
-    private void updateFavoriteIcon(ItemEventBinding b, Event event) {
+    private void updateFavoriteIcon(ItemEventBinding b, Event event, boolean isDark) {
         boolean isFav = favoritesManager.isFavorite(event.getId());
         b.eventTextInclude.favoriteIcon.setImageResource(
                 isFav ? R.drawable.ic_heart_pink_filled : R.drawable.ic_heart_outline
         );
+        
+        if (isFav) {
+            b.eventTextInclude.favoriteIcon.clearColorFilter();
+        } else {
+            b.eventTextInclude.favoriteIcon.setColorFilter(isDark ? Color.WHITE : Color.parseColor("#757575"));
+        }
+        
         b.eventTextInclude.favoriteIcon.setOnClickListener(v -> {
             favoritesManager.toggleFavorite(event.getId());
-            updateFavoriteIcon(b, event);
+            updateFavoriteIcon(b, event, isDark);
+        });
+    }
+
+    private void setupShareButton(ItemEventBinding b, Event event) {
+        b.eventTextInclude.shareIcon.setOnClickListener(v -> {
+            String shareText = event.getTitle() + "\n" +
+                    DateUtils.formatToHuman(event.getDate()) + "\n" +
+                    event.getLocation();
+
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                    v.getContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Event Details", shareText);
+            if (clipboard != null) {
+                clipboard.setPrimaryClip(clip);
+                android.widget.Toast.makeText(v.getContext(), "Event details copied to clipboard!", android.widget.Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -197,6 +221,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         b.eventTextInclude.eventLocation.setTextColor(Color.parseColor("#757575"));
         b.eventTextInclude.eventCapacity.setTextColor(Color.parseColor("#9E9E9E"));
         b.eventImageInclude.eventImageMask.setBackgroundResource(R.drawable.fade_mask);
+        b.eventTextInclude.shareIcon.setColorFilter(Color.parseColor("#757575"));
+        
+        int pos = holder.getBindingAdapterPosition();
+        if (pos != RecyclerView.NO_POSITION && pos < events.size()) {
+            updateFavoriteIcon(b, events.get(pos), false);
+        }
     }
 
     private void analyzeImageColor(Bitmap bitmap, EventViewHolder holder) {
@@ -227,6 +257,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         b.eventTextInclude.eventLocation.setTextColor(Color.parseColor("#BDBDBD"));
         b.eventTextInclude.eventCapacity.setTextColor(Color.parseColor("#9E9E9E"));
         b.eventImageInclude.eventImageMask.setBackgroundResource(R.drawable.fade_mask_dark);
+        b.eventTextInclude.shareIcon.setColorFilter(Color.WHITE);
+        
+        int pos = holder.getBindingAdapterPosition();
+        if (pos != RecyclerView.NO_POSITION && pos < events.size()) {
+            updateFavoriteIcon(b, events.get(pos), true);
+        }
     }
 
     @Override
