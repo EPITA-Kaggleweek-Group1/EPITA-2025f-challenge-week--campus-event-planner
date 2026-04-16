@@ -11,11 +11,13 @@
         android:id="@+id/searchEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search events..."
+        android:hint="Search events or locations..."
         android:padding="16dp"
         android:layout_margin="12dp"
         android:background="@android:drawable/editbox_background"
-        android:inputType="text" />
+        android:inputType="text"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="8dp" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -60,16 +62,31 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="This Month" />
-
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/eventsRecyclerView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false" />
+        android:layout_weight="1">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/eventsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/emptyStateView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No events found"
+            android:textSize="18sp"
+            android:textColor="#9E9E9E"
+            android:textStyle="italic"
+            android:visibility="gone" />
+
+    </FrameLayout>
 </LinearLayout>
