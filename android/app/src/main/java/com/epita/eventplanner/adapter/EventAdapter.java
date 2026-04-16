@@ -1,5 +1,7 @@
 package com.epita.eventplanner.adapter;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -7,17 +9,14 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.epita.eventplanner.R;
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
-
 import org.json.JSONArray;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -26,16 +25,19 @@ import java.util.concurrent.Executors;
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     private List<Event> events = new ArrayList<>();
-    private OnEventClickListener listener;
+    private final OnEventClickListener listener;
+    private final SharedPreferences prefs;
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public interface OnEventClickListener {
         void onEventClick(Event event);
+        void onFavoriteToggle();
     }
 
-    public EventAdapter(OnEventClickListener listener) {
+    public EventAdapter(Context context, OnEventClickListener listener) {
         this.listener = listener;
+        this.prefs = context.getSharedPreferences("EventPrefs", Context.MODE_PRIVATE);
     }
 
     public void setEvents(List<Event> events) {
@@ -46,8 +48,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_event, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_event, parent, false);
         return new EventViewHolder(view);
     }
 
@@ -57,20 +58,26 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.titleText.setText(event.getTitle());
         holder.dateText.setText(event.getDate());
         holder.locationText.setText(event.getLocation());
-        holder.capacityText.setText("Capacity: " + event.getCapacity());
 
-        // Reset UI state for recycled view
-        holder.statusText.setText("Loading...");
-        setIndicatorColor(holder.indicator, Color.GRAY);
+        // Setup Favorite Icon
+        boolean isFav = prefs.getBoolean("fav_" + event.getId(), false);
+        holder.favBtn.setImageResource(isFav ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
 
-        // Fetch registration count in background
+        holder.favBtn.setOnClickListener(v -> {
+            boolean current = prefs.getBoolean("fav_" + event.getId(), false);
+            prefs.edit().putBoolean("fav_" + event.getId(), !current).apply();
+            notifyItemChanged(position);
+            if (listener != null) listener.onFavoriteToggle();
+        });
+
+        // Availability Logic
+        holder.statusText.setText("Checking...");
         executorService.execute(() -> {
             try {
                 String rJson = ApiClient.fetchJson("/events/" + event.getId() + "/registrations");
                 int regCount = new JSONArray(rJson).length();
                 int remaining = event.getCapacity() - regCount;
-
-                mainHandler.post(() -> updateAvailabilityUI(holder, remaining));
+                mainHandler.post(() -> updateStatusUI(holder, remaining));
             } catch (Exception e) {
                 mainHandler.post(() -> holder.statusText.setText("Status unknown"));
             }
@@ -81,23 +88,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         });
     }
 
-    private void updateAvailabilityUI(EventViewHolder holder, int remaining) {
+    private void updateStatusUI(EventViewHolder holder, int remaining) {
         if (remaining <= 0) {
             holder.statusText.setText("SOLD OUT");
             holder.statusText.setTextColor(Color.RED);
-            setIndicatorColor(holder.indicator, Color.RED);
-        } else if (remaining < 5) {
-            holder.statusText.setText("Only " + remaining + " left!");
-            holder.statusText.setTextColor(Color.parseColor("#FF8C00")); // Orange
-            setIndicatorColor(holder.indicator, Color.parseColor("#FF8C00"));
+            setCircleColor(holder.indicator, Color.RED);
         } else {
             holder.statusText.setText("Available");
-            holder.statusText.setTextColor(Color.parseColor("#2E7D32")); // Green
-            setIndicatorColor(holder.indicator, Color.parseColor("#2E7D32"));
+            holder.statusText.setTextColor(Color.parseColor("#2E7D32"));
+            setCircleColor(holder.indicator, Color.parseColor("#2E7D32"));
         }
     }
 
-    private void setIndicatorColor(View v, int color) {
+    private void setCircleColor(View v, int color) {
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
         shape.setColor(color);
@@ -105,12 +108,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     @Override
-    public int getItemCount() {
-        return events.size();
-    }
+    public int getItemCount() { return events.size(); }
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
-        TextView titleText, dateText, locationText, capacityText, statusText;
+        TextView titleText, dateText, locationText, statusText;
+        ImageButton favBtn;
         View indicator;
 
         EventViewHolder(@NonNull View itemView) {
@@ -118,8 +120,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             titleText = itemView.findViewById(R.id.eventTitle);
             dateText = itemView.findViewById(R.id.eventDate);
             locationText = itemView.findViewById(R.id.eventLocation);
-            capacityText = itemView.findViewById(R.id.eventCapacity);
             statusText = itemView.findViewById(R.id.statusText);
+            favBtn = itemView.findViewById(R.id.favoriteButton);
             indicator = itemView.findViewById(R.id.availabilityIndicator);
         }
     }

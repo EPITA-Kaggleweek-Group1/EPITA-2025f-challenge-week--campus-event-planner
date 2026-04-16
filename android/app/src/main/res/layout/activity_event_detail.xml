@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FAFAFA">
@@ -11,29 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:visibility="gone" />
-
-    <LinearLayout
-        android:id="@+id/errorView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Failed to load event details"
-            android:textColor="#757575"
-            android:layout_marginBottom="12dp" />
-
-        <Button
-            android:id="@+id/retryButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Retry" />
-    </LinearLayout>
 
     <ScrollView
         android:id="@+id/detailContent"
@@ -50,27 +27,44 @@
             <ImageView
                 android:id="@+id/detailImage"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="220dp"
                 android:scaleType="centerCrop"
                 android:layout_marginBottom="16dp"
                 android:background="#EEEEEE"
                 android:contentDescription="Event Image" />
 
-            <TextView
-                android:id="@+id/detailTitle"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Event Title"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#212121"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/detailTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/detailFavBtn"
+                    android:text="Event Title"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
+
+                <ImageButton
+                    android:id="@+id/detailFavBtn"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/btn_star_big_off"
+                    android:contentDescription="Favorite Button" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/detailDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Date placeholder"
+                android:text="Date"
                 android:textSize="16sp"
                 android:textColor="#757575"
                 android:layout_marginBottom="8dp" />
@@ -79,16 +73,7 @@
                 android:id="@+id/detailLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Location placeholder"
-                android:textSize="16sp"
-                android:textColor="#757575"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/detailCapacity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Capacity: --"
+                android:text="Location"
                 android:textSize="16sp"
                 android:textColor="#757575"
                 android:layout_marginBottom="16dp" />
@@ -97,7 +82,7 @@
                 android:id="@+id/detailDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Description placeholder"
+                android:text="Description text goes here..."
                 android:textSize="15sp"
                 android:textColor="#424242"
                 android:lineSpacingMultiplier="1.3"
@@ -107,18 +92,18 @@
                 android:id="@+id/remainingSpots"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Checking availability..."
+                android:text="Loading spots..."
                 android:textSize="14sp"
-                android:textStyle="italic"
-                android:textColor="#FF5722"
+                android:textStyle="bold"
+                android:textColor="#2E7D32"
                 android:layout_marginBottom="8dp" />
 
             <Button
                 android:id="@+id/registerButton"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:text="Register for Event"
-                android:backgroundTint="#2196F3"
+                app:backgroundTint="#2196F3"
                 android:textColor="#FFFFFF"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="20dp" />

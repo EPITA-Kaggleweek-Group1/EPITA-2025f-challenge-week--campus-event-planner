@@ -2,6 +2,8 @@ package com.epita.eventplanner;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -43,7 +45,9 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
 
         // Setup RecyclerView
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new EventAdapter(this);
+
+        // FIX: Passing two arguments: (Context, Listener)
+        adapter = new EventAdapter(this, this);
         rv.setAdapter(adapter);
 
         // Search Listener
@@ -85,22 +89,31 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private void applyFilters() {
         String query = searchBar.getText().toString().toLowerCase().trim();
         int checkedChipId = filterChipGroup.getCheckedChipId();
+        android.content.SharedPreferences prefs = getSharedPreferences("EventPrefs", MODE_PRIVATE);
 
         List<Event> filteredList = new ArrayList<>();
 
         for (Event event : allEventsMasterList) {
+            // Search logic
             boolean matchesSearch = query.isEmpty() ||
                     event.getTitle().toLowerCase().contains(query) ||
                     event.getLocation().toLowerCase().contains(query);
 
+            // Date logic
             boolean matchesDate = matchesDateFilter(event, checkedChipId);
 
-            if (matchesSearch && matchesDate) {
+            // Favorite logic (if Favorite chip is selected)
+            boolean matchesFav = true;
+            if (checkedChipId == R.id.chipFavorites) {
+                matchesFav = prefs.getBoolean("fav_" + event.getId(), false);
+            }
+
+            if (matchesSearch && matchesDate && matchesFav) {
                 filteredList.add(event);
             }
         }
 
-        // TOGGLE EMPTY STATE
+        // Toggle Empty State
         if (filteredList.isEmpty()) {
             emptyStateView.setVisibility(View.VISIBLE);
         } else {
@@ -111,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     }
 
     private boolean matchesDateFilter(Event event, int chipId) {
-        if (chipId == R.id.chipAll || chipId == -1) return true;
+        if (chipId == R.id.chipAll || chipId == -1 || chipId == R.id.chipFavorites) return true;
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
@@ -139,5 +152,13 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         Intent intent = new Intent(this, EventDetailActivity.class);
         intent.putExtra("event_id", event.getId());
         startActivity(intent);
+    }
+
+    // FIX: Implementing the missing Favorite Toggle method
+    @Override
+    public void onFavoriteToggle() {
+        // If we are currently looking at the "Favorites" filter,
+        // we need to re-apply filters so the item disappears immediately.
+        applyFilters();
     }
 }

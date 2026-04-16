@@ -62,6 +62,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="This Month" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFavorites"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Favorites"
+                app:chipIcon="@android:drawable/btn_star_big_on" />
+
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 

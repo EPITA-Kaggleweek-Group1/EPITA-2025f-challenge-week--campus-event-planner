@@ -1,5 +1,7 @@
 package com.epita.eventplanner;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,11 +9,10 @@ import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import com.bumptech.glide.Glide;
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
-import com.bumptech.glide.Glide;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
@@ -20,8 +21,10 @@ import java.util.Locale;
 
 public class EventDetailActivity extends AppCompatActivity {
     private int eventId;
+    private SharedPreferences prefs;
     private TextView title, desc, date, loc, spots;
     private Button regBtn;
+    private ImageButton favBtn;
     private ImageView img;
     private ProgressBar loadingSpinner;
     private View detailContent;
@@ -31,6 +34,10 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
+        // Initialize SharedPreferences
+        prefs = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE);
+        eventId = getIntent().getIntExtra("event_id", -1);
+
         // UI References
         title = findViewById(R.id.detailTitle);
         desc = findViewById(R.id.detailDescription);
@@ -38,19 +45,32 @@ public class EventDetailActivity extends AppCompatActivity {
         loc = findViewById(R.id.detailLocation);
         spots = findViewById(R.id.remainingSpots);
         regBtn = findViewById(R.id.registerButton);
+        favBtn = findViewById(R.id.detailFavBtn);
         img = findViewById(R.id.detailImage);
         loadingSpinner = findViewById(R.id.loadingSpinner);
         detailContent = findViewById(R.id.detailContent);
 
-        eventId = getIntent().getIntExtra("event_id", -1);
+        // Favorite Button Logic
+        updateFavIcon();
+        favBtn.setOnClickListener(v -> {
+            boolean isFav = prefs.getBoolean("fav_" + eventId, false);
+            prefs.edit().putBoolean("fav_" + eventId, !isFav).apply();
+            updateFavIcon();
+            String msg = !isFav ? "Added to Favorites" : "Removed from Favorites";
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        });
 
         regBtn.setOnClickListener(v -> showRegisterDialog());
 
         loadData();
     }
 
+    private void updateFavIcon() {
+        boolean isFav = prefs.getBoolean("fav_" + eventId, false);
+        favBtn.setImageResource(isFav ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+    }
+
     private void loadData() {
-        // Show loader while fetching
         runOnUiThread(() -> {
             loadingSpinner.setVisibility(View.VISIBLE);
             detailContent.setVisibility(View.INVISIBLE);
@@ -58,23 +78,21 @@ public class EventDetailActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
-                // 1. Fetch Event Details
                 String eJson = ApiClient.fetchJson("/events/" + eventId);
                 Event event = Event.fromJson(new JSONObject(eJson));
 
-                // 2. Fetch Registrations to calculate occupancy
                 String rJson = ApiClient.fetchJson("/events/" + eventId + "/registrations");
-                int currentRegistrationCount = new JSONArray(rJson).length();
+                int regCount = new JSONArray(rJson).length();
 
                 runOnUiThread(() -> {
-                    updateUI(event, currentRegistrationCount);
+                    updateUI(event, regCount);
                     loadingSpinner.setVisibility(View.GONE);
                     detailContent.setVisibility(View.VISIBLE);
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     loadingSpinner.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error loading event data", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Error loading event", Toast.LENGTH_SHORT).show();
                 });
             }
         }).start();
@@ -85,7 +103,6 @@ public class EventDetailActivity extends AppCompatActivity {
         desc.setText(event.getDescription());
         loc.setText(event.getLocation());
 
-        // Format Date
         try {
             SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
             SimpleDateFormat out = new SimpleDateFormat("MMM dd, yyyy @ HH:mm", Locale.US);
@@ -95,35 +112,16 @@ public class EventDetailActivity extends AppCompatActivity {
             date.setText(event.getDate());
         }
 
-        // Logic to Disable Button if Full
-        int totalCapacity = event.getCapacity();
-        int remainingSpots = totalCapacity - count;
+        int remaining = event.getCapacity() - count;
+        spots.setText(remaining + " spots left of " + event.getCapacity());
 
-        if (remainingSpots <= 0) {
-            // EVENT FULL STATE
-            spots.setText("Event is Sold Out (0 spots left)");
-            spots.setTextColor(Color.parseColor("#757575")); // Grey
-
+        if (remaining <= 0) {
             regBtn.setEnabled(false);
             regBtn.setText("Sold Out");
-            regBtn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.LTGRAY));
-        } else {
-            // EVENT AVAILABLE STATE
-            spots.setText(remainingSpots + " spots left of " + totalCapacity);
-
-            regBtn.setEnabled(true);
-            regBtn.setText("Register for Event");
-            regBtn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#2196F3"))); // Default Blue
-
-            // Visual warning if spots are low
-            if (remainingSpots < 5) {
-                spots.setTextColor(Color.RED);
-            } else {
-                spots.setTextColor(Color.parseColor("#2E7D32")); // Green
-            }
+            spots.setTextColor(Color.RED);
         }
 
-        Glide.with(this).load(event.getImageUrl()).into(img);
+        Glide.with(this).load(event.getImageUrl()).placeholder(android.R.drawable.ic_menu_gallery).into(img);
     }
 
     private void showRegisterDialog() {
@@ -132,46 +130,29 @@ public class EventDetailActivity extends AppCompatActivity {
         TextInputEditText eIn = v.findViewById(R.id.editEmail);
 
         new AlertDialog.Builder(this)
-                .setTitle("Confirm Registration")
+                .setTitle("Register")
                 .setView(v)
                 .setPositiveButton("Submit", (d, w) -> {
-                    String name = nIn.getText().toString().trim();
-                    String email = eIn.getText().toString().trim();
-
-                    if(name.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        Toast.makeText(this, "Please enter a valid name and email", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    submitRegistration(name, email);
+                    submitRegistration(nIn.getText().toString(), eIn.getText().toString());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void submitRegistration(String n, String e) {
+    private void submitRegistration(String name, String email) {
+        if (name.isEmpty() || email.isEmpty()) return;
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
-                body.put("user_name", n);
-                body.put("email", e);
-
+                body.put("user_name", name);
+                body.put("email", email);
                 ApiClient.postJson("/events/" + eventId + "/register", body.toString());
-
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Successfully registered!", Toast.LENGTH_SHORT).show();
-                    loadData(); // REFRESH UI to update spots and disable button if it was the last spot
+                    Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                    loadData();
                 });
-            } catch (Exception ex) {
-                runOnUiThread(() -> {
-                    // Check if the error is because it's full (if backend sends 403 or 400)
-                    if (ex.getMessage().contains("400") || ex.getMessage().contains("403")) {
-                        Toast.makeText(this, "Registration failed: Event is full", Toast.LENGTH_LONG).show();
-                    } else if (ex.getMessage().contains("409")) {
-                        Toast.makeText(this, "You are already registered!", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "Registration failed. Try again.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
