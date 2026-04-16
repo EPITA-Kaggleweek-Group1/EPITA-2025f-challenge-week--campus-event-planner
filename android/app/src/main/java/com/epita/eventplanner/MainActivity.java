@@ -3,11 +3,16 @@ package com.epita.eventplanner;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.epita.eventplanner.adapter.EventAdapter;
 import com.epita.eventplanner.api.ApiClient;
@@ -19,42 +24,50 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Main screen: displays a scrollable list of campus events fetched from
- * the Flask backend via GET /events.
- *
- * TODO (students):
- *   - Hook up the search bar to filter events (GET /events?search=...)
- *   - Implement pull-to-refresh
- *   - Navigate to EventDetailActivity on item click
- */
 public class MainActivity extends AppCompatActivity implements EventAdapter.OnEventClickListener {
 
     private static final String TAG = "MainActivity";
 
     private RecyclerView recyclerView;
     private EventAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    
+    private ProgressBar loadingSpinner;
+    private View errorView;
+    private LinearLayout mainContent;
+    private Button retryButton;
+    private TextView errorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Set up RecyclerView
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this::loadEvents);
+
+        loadingSpinner = findViewById(R.id.loadingSpinner);
+        errorView = findViewById(R.id.errorView);
+        mainContent = findViewById(R.id.mainContent);
+        retryButton = findViewById(R.id.retryButton);
+        errorMessage = findViewById(R.id.errorMessage);
+
+        errorMessage.setText("Failed to load events");
+        retryButton.setOnClickListener(v -> loadEvents());
+
         recyclerView = findViewById(R.id.eventsRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new EventAdapter(this);
         recyclerView.setAdapter(adapter);
 
-        // Fetch events from the API
         loadEvents();
     }
 
-    /**
-     * Fetch all events from the backend on a background thread and
-     * update the adapter on the UI thread.
-     */
     private void loadEvents() {
+        if (!swipeRefreshLayout.isRefreshing()) {
+            showLoading();
+        }
+
         new Thread(() -> {
             try {
                 String json = ApiClient.fetchJson("/events");
@@ -65,22 +78,44 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                     events.add(Event.fromJson(obj));
                 }
 
-                // Update UI on the main thread
-                runOnUiThread(() -> adapter.setEvents(events));
+                runOnUiThread(() -> {
+                    adapter.setEvents(events);
+                    showContent();
+                    swipeRefreshLayout.setRefreshing(false);
+                });
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to load events", e);
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    // Always show error and clear list on failure as requested
+                    adapter.setEvents(new ArrayList<>());
+                    showError();
+                    swipeRefreshLayout.setRefreshing(false);
+                });
             }
         }).start();
     }
 
+    private void showLoading() {
+        loadingSpinner.setVisibility(View.VISIBLE);
+        errorView.setVisibility(View.GONE);
+        mainContent.setVisibility(View.GONE);
+    }
+
+    private void showContent() {
+        loadingSpinner.setVisibility(View.GONE);
+        errorView.setVisibility(View.GONE);
+        mainContent.setVisibility(View.VISIBLE);
+    }
+
+    private void showError() {
+        loadingSpinner.setVisibility(View.GONE);
+        errorView.setVisibility(View.VISIBLE);
+        mainContent.setVisibility(View.GONE);
+    }
+
     @Override
     public void onEventClick(Event event) {
-        // TODO (students): pass the event ID to EventDetailActivity and load
-        // full details from GET /events/<id>
         Intent intent = new Intent(this, EventDetailActivity.class);
         intent.putExtra("event_id", event.getId());
         startActivity(intent);
