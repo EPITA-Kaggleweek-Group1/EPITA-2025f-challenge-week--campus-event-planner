@@ -8,67 +8,79 @@
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="12dp">
 
-        <LinearLayout
-            android:id="@+id/textContainer"
+        <ImageView
+            android:id="@+id/eventThumbnail"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"
+            android:contentDescription="Event Thumbnail" />
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/favoriteButton"
-            android:layout_marginEnd="8dp"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp">
 
-            <TextView
-                android:id="@+id/eventTitle"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/textContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#212121" />
+                android:layout_toStartOf="@+id/favoriteButton"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/eventDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#757575" />
+                <TextView
+                    android:id="@+id/eventTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
 
-            <TextView
-                android:id="@+id/eventLocation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#757575" />
+                <TextView
+                    android:id="@+id/eventDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="13sp"
+                    android:textColor="#757575" />
 
-            <TextView
-                android:id="@+id/statusText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/eventLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="#757575" />
 
-        <ImageButton
-            android:id="@+id/favoriteButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/btn_star_big_off"
-            android:contentDescription="Favorite Button" />
+                <TextView
+                    android:id="@+id/statusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-        <View
-            android:id="@+id/availabilityIndicator"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginBottom="4dp"
-            android:layout_marginEnd="4dp" />
+            <ImageButton
+                android:id="@+id/favoriteButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/btn_star_big_off" />
 
-    </RelativeLayout>
+            <View
+                android:id="@+id/availabilityIndicator"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

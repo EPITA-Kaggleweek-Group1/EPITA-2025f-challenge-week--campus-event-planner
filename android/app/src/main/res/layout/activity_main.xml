@@ -74,28 +74,44 @@
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <FrameLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/eventsRecyclerView"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false" />
+            android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/emptyStateView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="No events found"
-            android:textSize="18sp"
-            android:textColor="#9E9E9E"
-            android:textStyle="italic"
-            android:visibility="gone" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/eventsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:clipToPadding="false" />
 
-    </FrameLayout>
+            <TextView
+                android:id="@+id/emptyStateView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_centerInParent="true"
+                android:text="No events found"
+                android:textSize="18sp"
+                android:textColor="#9E9E9E"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/loadMoreProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>
