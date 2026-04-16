@@ -4,6 +4,8 @@ Service for the Campus Event Planner
 This is a layer for implementing related services, but not modify the models
 """
 
+from flask import jsonify
+
 
 def service_filter_events(
     conn,
@@ -13,6 +15,8 @@ def service_filter_events(
     date_from=None,
     date_to=None,
     order="asc",
+    offset=0,
+    limit=20,
 ):
     cursor = conn.cursor(dictionary=True)
 
@@ -60,12 +64,23 @@ def service_filter_events(
         FROM events
         {where_clause}
         {order_clause}
+        LIMIT %s OFFSET %s
     """
 
+    params.extend([limit, offset])
     cursor.execute(query, tuple(params))
     results = cursor.fetchall()
     cursor.close()
-    return results
+    # return results
+    return {
+        "data": results,
+        "pagination": {
+            "limit": limit,
+            "offset": offset,
+            "next_offset": offset + len(results),
+            "has_more": len(results) == limit,
+        },
+    }
 
 
 def service_update_event(conn, event_id: int, data: dict):
