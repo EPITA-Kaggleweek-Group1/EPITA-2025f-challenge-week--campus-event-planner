@@ -35,21 +35,6 @@ def _serialize_row(row):
     return result
 
 
-def get_all_events(conn) -> List[dict[str, RowItemType] | None]:
-    """
-    Retrieve every event, ordered by date ascending.
-
-    Returns:
-        list[dict]: A list of event dictionaries.
-    """
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM events ORDER BY date ASC")
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return [_serialize_row(r) for r in rows]
-
-
 def get_event_by_id(conn, event_id: int) -> dict | None:
     """
     Retrieve a single event by its primary key.

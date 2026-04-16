@@ -12,6 +12,7 @@ def service_filter_events(
     description=None,
     date_from=None,
     date_to=None,
+    order="asc",
 ):
     cursor = conn.cursor(dictionary=True)
 
@@ -42,6 +43,14 @@ def service_filter_events(
         conditions.append("date <= %s")
         params.append(date_to)
 
+    # order filter
+    order_clause = ""
+    if order and order.lower() == "desc":
+        order_clause = "ORDER BY date DESC"
+
+    if order and order.lower() == "asc":
+        order_clause = "ORDER BY date ASC"
+
     where_clause = ""
     if conditions:
         where_clause = "WHERE " + " AND ".join(conditions)
@@ -50,7 +59,7 @@ def service_filter_events(
         SELECT *
         FROM events
         {where_clause}
-        ORDER BY date
+        {order_clause}
     """
 
     cursor.execute(query, tuple(params))

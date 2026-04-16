@@ -509,3 +509,43 @@ class TestSearch:
 
         for event in data:
             assert "2026-05-01" <= event["date"] <= "2026-05-31"
+
+    def test_events_default_order_is_asc(self, client):
+        """GET /events should return events ordered by date DESC by default."""
+
+        response = client.get("/events")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 2
+
+        # check descending order
+        for i in range(len(data) - 1):
+            assert data[i]["date"] <= data[i + 1]["date"]
+
+    def test_events_order_desc(self, client):
+        """GET /events?order=desc should return events ordered by date DESC."""
+
+        response = client.get("/events?order=desc")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 2
+
+        for i in range(len(data) - 1):
+            assert data[i]["date"] >= data[i + 1]["date"]
+
+    def test_events_order_asc(self, client):
+        """GET /events?order=asc should return events ordered by date ASC."""
+
+        response = client.get("/events?order=asc")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert isinstance(data, list)
+        assert len(data) >= 2
+
+        for i in range(len(data) - 1):
+            assert data[i]["date"] <= data[i + 1]["date"]

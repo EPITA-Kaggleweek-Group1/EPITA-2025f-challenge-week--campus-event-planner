@@ -17,7 +17,6 @@ from models import (
     AlreadyRegisteredError,
     EventFullError,
     EventNotFoundError,
-    get_all_events,
     get_event_by_id,
     create_event,
     registration_create,
@@ -57,34 +56,27 @@ def register_events_routes(app):
         - ?description=
         - ?date_from=
         - ?date_to=
+        - ?order="asc" | "desc" (default)
         """
-
         search = request.args.get("search")
         title = request.args.get("title")
         description = request.args.get("description")
         date_from = request.args.get("date_from")
         date_to = request.args.get("date_to")
+        order = request.args.get("order", "asc")
 
         conn = app.db.get_connection()
 
         try:
-            if (
-                not search
-                and not title
-                and not description
-                and not date_from
-                and not date_to
-            ):
-                events = get_all_events(conn)
-            else:
-                events = service_filter_events(
-                    conn,
-                    search=search,
-                    title=title,
-                    description=description,
-                    date_from=date_from,
-                    date_to=date_to,
-                )
+            events = service_filter_events(
+                conn,
+                search=search,
+                title=title,
+                description=description,
+                date_from=date_from,
+                date_to=date_to,
+                order=order,
+            )
 
             return jsonify(events), 200
 
