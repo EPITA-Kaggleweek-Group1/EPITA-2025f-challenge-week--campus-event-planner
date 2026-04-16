@@ -24,6 +24,7 @@
                 android:visibility="gone" />
 
             <include
+                android:id="@+id/errorLayout"
                 layout="@layout/layout_error_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -45,7 +46,9 @@
                     android:scaleType="centerCrop"
                     tools:src="@tools:sample/backgrounds/scenic" />
 
-                <include layout="@layout/layout_event_detail_content" />
+                <include
+                    android:id="@+id/eventDetailContent"
+                    layout="@layout/layout_event_detail_content" />
             </LinearLayout>
 
         </RelativeLayout>

@@ -4,18 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.epita.eventplanner.adapter.EventAdapter;
 import com.epita.eventplanner.api.ApiClient;
+import com.epita.eventplanner.databinding.ActivityMainBinding;
 import com.epita.eventplanner.model.Event;
 
 import org.json.JSONArray;
@@ -27,44 +22,28 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements EventAdapter.OnEventClickListener {
 
     private static final String TAG = "MainActivity";
-
-    private RecyclerView recyclerView;
+    private ActivityMainBinding binding;
     private EventAdapter adapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    
-    private ProgressBar loadingSpinner;
-    private View errorView;
-    private LinearLayout mainContent;
-    private Button retryButton;
-    private TextView errorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(this::loadEvents);
+        binding.swipeRefreshLayout.setOnRefreshListener(this::loadEvents);
+        binding.errorLayout.errorMessage.setText("Failed to load events");
+        binding.errorLayout.retryButton.setOnClickListener(v -> loadEvents());
 
-        loadingSpinner = findViewById(R.id.loadingSpinner);
-        errorView = findViewById(R.id.errorView);
-        mainContent = findViewById(R.id.mainContent);
-        retryButton = findViewById(R.id.retryButton);
-        errorMessage = findViewById(R.id.errorMessage);
-
-        errorMessage.setText("Failed to load events");
-        retryButton.setOnClickListener(v -> loadEvents());
-
-        recyclerView = findViewById(R.id.eventsRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.eventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new EventAdapter(this);
-        recyclerView.setAdapter(adapter);
+        binding.eventsRecyclerView.setAdapter(adapter);
 
         loadEvents();
     }
 
     private void loadEvents() {
-        if (!swipeRefreshLayout.isRefreshing()) {
+        if (!binding.swipeRefreshLayout.isRefreshing()) {
             showLoading();
         }
 
@@ -81,37 +60,36 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 runOnUiThread(() -> {
                     adapter.setEvents(events);
                     showContent();
-                    swipeRefreshLayout.setRefreshing(false);
+                    binding.swipeRefreshLayout.setRefreshing(false);
                 });
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to load events", e);
                 runOnUiThread(() -> {
-                    // Always show error and clear list on failure as requested
                     adapter.setEvents(new ArrayList<>());
                     showError();
-                    swipeRefreshLayout.setRefreshing(false);
+                    binding.swipeRefreshLayout.setRefreshing(false);
                 });
             }
         }).start();
     }
 
     private void showLoading() {
-        loadingSpinner.setVisibility(View.VISIBLE);
-        errorView.setVisibility(View.GONE);
-        mainContent.setVisibility(View.GONE);
+        binding.loadingSpinner.setVisibility(View.VISIBLE);
+        binding.errorLayout.errorView.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.GONE);
     }
 
     private void showContent() {
-        loadingSpinner.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        mainContent.setVisibility(View.VISIBLE);
+        binding.loadingSpinner.setVisibility(View.GONE);
+        binding.errorLayout.errorView.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.VISIBLE);
     }
 
     private void showError() {
-        loadingSpinner.setVisibility(View.GONE);
-        errorView.setVisibility(View.VISIBLE);
-        mainContent.setVisibility(View.GONE);
+        binding.loadingSpinner.setVisibility(View.GONE);
+        binding.errorLayout.errorView.setVisibility(View.VISIBLE);
+        binding.mainContent.setVisibility(View.GONE);
     }
 
     @Override

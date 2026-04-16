@@ -3,18 +3,13 @@ package com.epita.eventplanner;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
 import com.epita.eventplanner.api.ApiClient;
+import com.epita.eventplanner.databinding.ActivityEventDetailBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
 
@@ -22,49 +17,20 @@ import org.json.JSONObject;
 
 public class EventDetailActivity extends AppCompatActivity {
     private static final String TAG = "EventDetailActivity";
-
-    private ProgressBar loadingSpinner;
-    private View errorView;
-    private ScrollView detailContent;
-    private View actualContent;
-    private Button retryButton;
-    private TextView errorMessage;
-    private SwipeRefreshLayout swipeRefreshLayout;
-
+    private ActivityEventDetailBinding binding;
     private int eventId;
-
-    private TextView detailTitle;
-    private TextView detailDate;
-    private TextView detailLocation;
-    private TextView detailCapacity;
-    private TextView detailDescription;
-    private ImageView detailImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_detail);
-
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        loadingSpinner = findViewById(R.id.loadingSpinner);
-        errorView = findViewById(R.id.errorView);
-        detailContent = findViewById(R.id.detailContent);
-        actualContent = findViewById(R.id.actualContent);
-        retryButton = findViewById(R.id.retryButton);
-        errorMessage = findViewById(R.id.errorMessage);
-
-        detailTitle = findViewById(R.id.detailTitle);
-        detailDate = findViewById(R.id.detailDate);
-        detailLocation = findViewById(R.id.detailLocation);
-        detailCapacity = findViewById(R.id.detailCapacity);
-        detailDescription = findViewById(R.id.detailDescription);
-        detailImage = findViewById(R.id.detailImage);
+        binding = ActivityEventDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         eventId = getIntent().getIntExtra("event_id", -1);
 
-        errorMessage.setText("Failed to load event details");
-        swipeRefreshLayout.setOnRefreshListener(() -> loadEventDetails(eventId));
-        retryButton.setOnClickListener(v -> loadEventDetails(eventId));
+        binding.errorLayout.errorMessage.setText("Failed to load event details");
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> loadEventDetails(eventId));
+        binding.errorLayout.retryButton.setOnClickListener(v -> loadEventDetails(eventId));
 
         if (eventId != -1) {
             loadEventDetails(eventId);
@@ -75,7 +41,7 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void loadEventDetails(int id) {
-        if (!swipeRefreshLayout.isRefreshing()) {
+        if (!binding.swipeRefreshLayout.isRefreshing()) {
             showLoading();
         }
 
@@ -88,50 +54,57 @@ public class EventDetailActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     populateUI(event);
                     showContent();
-                    swipeRefreshLayout.setRefreshing(false);
+                    binding.swipeRefreshLayout.setRefreshing(false);
                 });
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to load event details", e);
                 runOnUiThread(() -> {
                     showError();
-                    swipeRefreshLayout.setRefreshing(false);
+                    binding.swipeRefreshLayout.setRefreshing(false);
                 });
             }
         }).start();
     }
 
     private void showLoading() {
-        loadingSpinner.setVisibility(View.VISIBLE);
-        errorView.setVisibility(View.GONE);
-        actualContent.setVisibility(View.GONE);
+        binding.loadingSpinner.setVisibility(View.VISIBLE);
+        binding.errorLayout.errorView.setVisibility(View.VISIBLE);
+        binding.actualContent.setVisibility(View.GONE);
+        // Note: We hide error view specifically if we are loading
+        binding.errorLayout.errorView.setVisibility(View.GONE);
     }
 
     private void showContent() {
-        loadingSpinner.setVisibility(View.GONE);
-        errorView.setVisibility(View.GONE);
-        actualContent.setVisibility(View.VISIBLE);
+        binding.loadingSpinner.setVisibility(View.GONE);
+        binding.errorLayout.errorView.setVisibility(View.GONE);
+        binding.actualContent.setVisibility(View.VISIBLE);
     }
 
     private void showError() {
-        loadingSpinner.setVisibility(View.GONE);
-        errorView.setVisibility(View.VISIBLE);
-        actualContent.setVisibility(View.GONE);
+        binding.loadingSpinner.setVisibility(View.GONE);
+        binding.errorLayout.errorView.setVisibility(View.VISIBLE);
+        binding.actualContent.setVisibility(View.GONE);
     }
 
     private void populateUI(Event event) {
-        detailTitle.setText(event.getTitle());
-        detailLocation.setText(event.getLocation());
-        detailDescription.setText(event.getDescription());
-        detailCapacity.setText("Capacity: " + event.getCapacity());
-        detailDate.setText(DateUtils.formatToHuman(event.getDate()));
+        // Accessing views through the included layout_event_detail_content
+        // Note: the include in activity_event_detail doesn't have an ID, 
+        // but its views are merged if not using a bind-able include ID.
+        // Actually, it's better to give the include an ID or access views directly if they have IDs.
+        
+        binding.eventDetailContent.detailTitle.setText(event.getTitle());
+        binding.eventDetailContent.detailLocation.setText(event.getLocation());
+        binding.eventDetailContent.detailDescription.setText(event.getDescription());
+        binding.eventDetailContent.detailCapacity.setText("Capacity: " + event.getCapacity());
+        binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
 
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            detailImage.setVisibility(android.view.View.VISIBLE);
-            Glide.with(this).load(imageUrl).centerCrop().into(detailImage);
+            binding.detailImage.setVisibility(android.view.View.VISIBLE);
+            Glide.with(this).load(imageUrl).centerCrop().into(binding.detailImage);
         } else {
-            detailImage.setVisibility(android.view.View.GONE);
+            binding.detailImage.setVisibility(android.view.View.GONE);
         }
 
         if (getSupportActionBar() != null) {
