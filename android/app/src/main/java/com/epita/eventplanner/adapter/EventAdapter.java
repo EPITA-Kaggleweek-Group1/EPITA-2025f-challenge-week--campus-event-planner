@@ -29,15 +29,8 @@ import java.util.List;
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
+    private final OnEventClickListener listener;
     private List<Event> events = new ArrayList<>();
-    private OnEventClickListener listener;
-
-    /**
-     * Callback interface for item clicks.
-     */
-    public interface OnEventClickListener {
-        void onEventClick(Event event);
-    }
 
     public EventAdapter(OnEventClickListener listener) {
         this.listener = listener;
@@ -69,6 +62,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         b.eventTextInclude.eventCapacity.setText(
                 holder.itemView.getContext().getString(R.string.capacity_format_main, event.getRegistrationCount(), event.getCapacity())
         );
+
+        updateCapacityIndicator(b, event);
 
         // Default state (Light)
         resetToDefaultState(holder);
@@ -104,6 +99,25 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 listener.onEventClick(event);
             }
         });
+    }
+
+    private void updateCapacityIndicator(ItemEventBinding b, Event event) {
+        int capacity = event.getCapacity();
+        int count = event.getRegistrationCount();
+        int remaining = capacity - count;
+
+        int color;
+        if (remaining <= 0) {
+            color = Color.parseColor("#9E9E9E"); // Gray (Full)
+        } else if (remaining <= 5) {
+            color = Color.parseColor("#F44336"); // Red (Almost Full)
+        } else if (remaining <= 20) {
+            color = Color.parseColor("#FF9800"); // Orange (Filling Up)
+        } else {
+            color = Color.parseColor("#4CAF50"); // Green (Plenty of spots)
+        }
+
+        b.eventTextInclude.capacityIndicator.getBackground().setTint(color);
     }
 
     private void resetToDefaultState(EventViewHolder holder) {
@@ -149,6 +163,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public int getItemCount() {
         return events.size();
+    }
+
+    /**
+     * Callback interface for item clicks.
+     */
+    public interface OnEventClickListener {
+        void onEventClick(Event event);
     }
 
     /**

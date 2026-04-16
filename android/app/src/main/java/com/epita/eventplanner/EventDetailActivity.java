@@ -174,6 +174,21 @@ public class EventDetailActivity extends AppCompatActivity {
         binding.actualContent.setVisibility(View.GONE);
     }
 
+    private void updateCapacityIndicator(int count, int capacity) {
+        int remaining = capacity - count;
+        int color;
+        if (remaining <= 0) {
+            color = android.graphics.Color.parseColor("#9E9E9E"); // Gray
+        } else if (remaining <= 5) {
+            color = android.graphics.Color.parseColor("#F44336"); // Red
+        } else if (remaining <= 20) {
+            color = android.graphics.Color.parseColor("#FF9800"); // Orange
+        } else {
+            color = android.graphics.Color.parseColor("#4CAF50"); // Green
+        }
+        binding.eventDetailContent.capacityIndicator.getBackground().setTint(color);
+    }
+
     private void populateUI(Event event, int registrationCount) {
         binding.eventDetailContent.detailTitle.setText(event.getTitle());
         binding.eventDetailContent.detailLocation.setText(event.getLocation());
@@ -181,6 +196,8 @@ public class EventDetailActivity extends AppCompatActivity {
         binding.eventDetailContent.detailCapacity.setText(
                 getString(R.string.capacity_format_detail, registrationCount, event.getCapacity()));
         binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
+
+        updateCapacityIndicator(registrationCount, event.getCapacity());
 
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {

@@ -38,12 +38,28 @@
         tools:text="Grand Hall, Campus" />
 
     <!-- Capacity -->
-    <TextView
-        android:id="@+id/eventCapacity"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#9E9E9E"
-        android:textSize="13sp"
-        tools:text="42 / 150 spots remaining" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/capacityIndicator"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/circle_indicator"
+            tools:backgroundTint="#4CAF50" />
+
+        <TextView
+            android:id="@+id/eventCapacity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#9E9E9E"
+            android:textSize="13sp"
+            tools:text="42 / 150 spots remaining" />
+
+    </LinearLayout>
 
 </LinearLayout>
