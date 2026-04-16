@@ -12,6 +12,7 @@ Students must add:
     GET  /events?search=&date=        — search & filter
 """
 
+import html
 from flask import jsonify, request
 from models import (
     AlreadyRegisteredError,
@@ -209,12 +210,23 @@ def register_events_routes(app):
         events = cursor.fetchall()
         cursor.close()
         conn.close()
-        html = "<html><head><title>Admin - Events</title></head><body>"
-        html += "<h1>Event Admin Panel</h1>"
+
+        html_content = "<html><head><title>Admin - Events</title></head><body>"
+        html_content += "<h1>Event Admin Panel</h1>"
+
         for e in events:
-            html += f"<div class='event'><h3>{e['title']}</h3><p>{e['description']}</p></div>"
-        html += "</body></html>"
-        return html
+            title = html.escape(e["title"] or "")
+            description = html.escape(e["description"] or "")
+
+            html_content += f"""
+                <div class='event'>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                </div>
+            """
+
+        html_content += "</body></html>"
+        return html_content
 
     @app.route("/events/<int:event_id>", methods=["PATCH"])
     def update_event(event_id):
