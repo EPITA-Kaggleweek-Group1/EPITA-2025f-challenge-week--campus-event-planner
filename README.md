@@ -352,9 +352,9 @@ Create a new registration
 | Code      | TODO                                                       | Status |
 | --------- | ---------------------------------------------------------- | ------ |
 | CEPN-S026 | [Mobile] 'No events found' empty state                     | ✅      |
-| CEPN-S027 | [Mobile] Favorite icon on cards + detail                   |        |
-| CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) |        |
-| CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              |        |
+| CEPN-S027 | [Mobile] Favorite icon on cards + detail                   | ✅      |
+| CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) | ✅      |
+| CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              | ✅      |
 | CEPN-S030 | [Mobile] Favorites screen in navigation                    |        |
 | CEPN-S031 | [Mobile] Favorites persist across restart                  |        |
 | CEPN-S032 | [API] Pagination: page + limit params, total_count         | ✅      |

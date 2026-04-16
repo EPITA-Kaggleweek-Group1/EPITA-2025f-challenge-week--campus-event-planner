@@ -19,6 +19,7 @@ import com.epita.eventplanner.R;
 import com.epita.eventplanner.databinding.ItemEventBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
+import com.epita.eventplanner.util.FavoritesManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,12 @@ import java.util.List;
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     private final OnEventClickListener listener;
+    private final FavoritesManager favoritesManager;
     private List<Event> events = new ArrayList<>();
 
-    public EventAdapter(OnEventClickListener listener) {
+    public EventAdapter(OnEventClickListener listener, FavoritesManager favoritesManager) {
         this.listener = listener;
+        this.favoritesManager = favoritesManager;
     }
 
     /**
@@ -143,11 +146,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     private void updateFavoriteIcon(ItemEventBinding b, Event event) {
+        boolean isFav = favoritesManager.isFavorite(event.getId());
         b.eventTextInclude.favoriteIcon.setImageResource(
-                event.isFavorite() ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
+                isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
         );
         b.eventTextInclude.favoriteIcon.setOnClickListener(v -> {
-            event.setFavorite(!event.isFavorite());
+            favoritesManager.toggleFavorite(event.getId());
             updateFavoriteIcon(b, event);
         });
     }

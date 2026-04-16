@@ -16,12 +16,14 @@ import com.epita.eventplanner.databinding.ActivityEventDetailBinding;
 import com.epita.eventplanner.databinding.DialogRegisterBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
+import com.epita.eventplanner.util.FavoritesManager;
 
 import org.json.JSONObject;
 
 public class EventDetailActivity extends AppCompatActivity {
     private static final String TAG = "EventDetailActivity";
     private ActivityEventDetailBinding binding;
+    private FavoritesManager favoritesManager;
     private int eventId;
 
     @Override
@@ -30,6 +32,7 @@ public class EventDetailActivity extends AppCompatActivity {
         binding = ActivityEventDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        favoritesManager = new FavoritesManager(this);
         eventId = getIntent().getIntExtra("event_id", -1);
 
         binding.errorLayout.errorMessage.setText(getString(
@@ -174,6 +177,17 @@ public class EventDetailActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void updateFavoriteIcon(int id) {
+        boolean isFav = favoritesManager.isFavorite(id);
+        binding.eventDetailContent.detailFavoriteIcon.setImageResource(
+                isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
+        );
+        binding.eventDetailContent.detailFavoriteIcon.setOnClickListener(v -> {
+            favoritesManager.toggleFavorite(id);
+            updateFavoriteIcon(id);
+        });
+    }
+
     private void updateCapacityIndicator(int count, int capacity) {
         int remaining = capacity - count;
         int colorRes;
@@ -223,6 +237,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 DateUtils.formatToHuman(event.getDate()));
 
         updateCapacityIndicator(registrationCount, event.getCapacity());
+        updateFavoriteIcon(event.getId());
 
         boolean passed = DateUtils.isPast(event.getDate());
         if (passed) {
