@@ -283,14 +283,67 @@ class TestCreateRegistration:
         data = r2.get_json()
         assert "error" in data or "message" in data
 
-    @pytest.mark.xfail(reason="Registrations count endpoint not implemented yet")
+
+class TestGetRegistrationsCount:
     def test_registrations_count(self, client):
-        """GET /events/<id>/registrations should return registration count."""
-        response = client.get("/events/1/registrations")
+        """GET /events/<id>/registrations/count should return registration count."""
+        response = client.get("/events/1/registrations/count")
         assert response.status_code == 200
         data = response.get_json()
         assert "count" in data
         assert isinstance(data["count"], int)
+
+    def test_registration_count_event_not_found(self, client):
+        """GET /events/<id>/registrations/count should return 404 if event does not exist."""
+        response = client.get("/events/99999/registrations/count")
+
+        assert response.status_code == 404
+
+    def test_registration_count_matches_created_registrations(self, client):
+        """Count endpoint should reflect actual number of registrations."""
+
+        # 1. Create event
+        event_payload = {
+            "title": "Count Test Event",
+            "description": "Testing registration count",
+            "date": "2026-05-01T09:00:00",
+            "location": "Lab 303",
+            "capacity": 100,
+        }
+
+        event_resp = client.post(
+            "/events",
+            data=json.dumps(event_payload),
+            content_type="application/json",
+        )
+        assert event_resp.status_code == 201
+        event_id = event_resp.get_json()["id"]
+
+        # 2. Create multiple registrations via loop
+        num_registrations = 10
+
+        for i in range(num_registrations):
+            reg_payload = {
+                "user_name": f"User {i}",
+                "email": f"user{i}@test.com",  # ensure uniqueness
+            }
+
+            reg_resp = client.post(
+                f"/events/{event_id}/register",
+                data=json.dumps(reg_payload),
+                content_type="application/json",
+            )
+            assert reg_resp.status_code == 201
+
+        # 3. Check count
+        count_resp = client.get(f"/events/{event_id}/registrations/count")
+        assert count_resp.status_code == 200
+
+        data = count_resp.get_json()
+        assert "count" in data
+        assert isinstance(data["count"], int)
+
+        assert data["count"] == num_registrations
 
 
 class TestSearch:

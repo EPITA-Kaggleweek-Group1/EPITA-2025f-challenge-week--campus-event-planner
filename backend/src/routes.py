@@ -22,6 +22,7 @@ from models import (
     create_event,
     registration_create,
     registration_get_all,
+    registration_get_count,
 )
 
 
@@ -99,11 +100,11 @@ def register_events_routes(app):
         """
         conn = app.db.get_connection()
         registrations = registration_get_all(conn, event_id)
+        conn.close()
         if registrations is None:
             return jsonify({"error": "Event not found"}), 404
 
         return jsonify(registrations), 200
-        conn.close()
 
     @app.route("/events/<int:event_id>/register", methods=["POST"])
     def add_event_registration(event_id: int):
@@ -135,6 +136,22 @@ def register_events_routes(app):
             return jsonify({"error": "Event is full"}), 409
         except Exception:
             return jsonify({"error": "Internal server error"}), 500
+        finally:
+            conn.close()
+
+    @app.route("/events/<int:event_id>/registrations/count", methods=["GET"])
+    def get_event_registration_count(event_id: int):
+        """
+        Return
+        200 - Count of the registered {"event_id": <id>, "count": <count>}
+        404 - If event not found
+        """
+        conn = app.db.get_connection()
+        try:
+            count = registration_get_count(conn, event_id)
+            return {"event_id": event_id, "count": count}, 200
+        except EventNotFoundError:
+            return jsonify({"error": "Event not found"}), 404
         finally:
             conn.close()
 
