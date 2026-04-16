@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         setContentView(binding.getRoot());
 
         binding.swipeRefreshLayout.setOnRefreshListener(this::loadEvents);
-        binding.errorLayout.errorMessage.setText("Failed to load events");
+        binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_events)));
         binding.errorLayout.retryButton.setOnClickListener(v -> loadEvents());
 
         binding.eventsRecyclerView.setLayoutManager(new LinearLayoutManager(this));

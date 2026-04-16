@@ -42,13 +42,24 @@
                     android:layout_height="200dp"
                     android:layout_marginBottom="16dp"
                     android:background="#EEEEEE"
-                    android:contentDescription="Event Image"
+                    android:contentDescription="@string/content_desc_event_image"
                     android:scaleType="centerCrop"
                     tools:src="@tools:sample/backgrounds/scenic" />
 
                 <include
                     android:id="@+id/eventDetailContent"
                     layout="@layout/layout_event_detail_content" />
+
+                <Button
+                    android:id="@+id/registerButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:backgroundTint="#2196F3"
+                    android:text="@string/register_event"
+                    android:textColor="#FFFFFF" />
             </LinearLayout>
 
         </RelativeLayout>
