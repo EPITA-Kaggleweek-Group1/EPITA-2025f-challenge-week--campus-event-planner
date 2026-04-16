@@ -257,9 +257,15 @@ public class EventDetailActivity extends AppCompatActivity {
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             binding.detailImage.setVisibility(android.view.View.VISIBLE);
-            Glide.with(this).load(imageUrl).centerCrop().into(binding.detailImage);
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.bg_abstract_placeholder)
+                    .error(R.drawable.bg_abstract_placeholder)
+                    .centerCrop()
+                    .into(binding.detailImage);
         } else {
-            binding.detailImage.setVisibility(android.view.View.GONE);
+            binding.detailImage.setVisibility(android.view.View.VISIBLE);
+            binding.detailImage.setImageResource(R.drawable.bg_abstract_placeholder);
         }
 
         if (getSupportActionBar() != null) {

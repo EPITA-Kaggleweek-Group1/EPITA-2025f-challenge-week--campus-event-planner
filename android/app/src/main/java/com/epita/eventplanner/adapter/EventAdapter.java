@@ -95,6 +95,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             Glide.with(holder.itemView.getContext())
                     .asBitmap()
                     .load(imageUrl)
+                    .placeholder(R.drawable.bg_abstract_placeholder)
+                    .error(R.drawable.bg_abstract_placeholder)
                     .centerCrop()
                     .into(new CustomTarget<Bitmap>() {
                         @Override
@@ -107,10 +109,17 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                         public void onLoadCleared(@Nullable Drawable placeholder) {
                             b.eventImageInclude.eventImage.setImageDrawable(placeholder);
                         }
+
+                        @Override
+                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                            super.onLoadFailed(errorDrawable);
+                            b.eventImageInclude.eventImage.setImageDrawable(errorDrawable);
+                        }
                     });
         } else {
-            b.eventImageInclude.eventImage.setVisibility(View.GONE);
-            b.eventImageInclude.eventImageMask.setVisibility(View.GONE);
+            b.eventImageInclude.eventImage.setVisibility(View.VISIBLE);
+            b.eventImageInclude.eventImageMask.setVisibility(View.VISIBLE);
+            b.eventImageInclude.eventImage.setImageResource(R.drawable.bg_abstract_placeholder);
         }
 
         holder.itemView.setOnClickListener(v -> {
