@@ -1,87 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Event title -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="6dp">
-
-        <TextView
-            android:id="@+id/eventTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_toStartOf="@+id/eventStatusLabel"
-            android:textColor="#212121"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:text="Annual Tech Symposium" />
-
-        <TextView
-            android:id="@+id/eventStatusLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:background="#757575"
-            android:paddingHorizontal="6dp"
-            android:paddingVertical="2dp"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:visibility="gone"
-            tools:text="TODAY"
-            tools:visibility="visible" />
-    </RelativeLayout>
-
-    <!-- Date -->
-    <TextView
-        android:id="@+id/eventDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:textColor="#757575"
-        android:textSize="14sp"
-        tools:text="Fri, Oct 24, 2024 at 10:00 AM" />
-
-    <!-- Location -->
-    <TextView
-        android:id="@+id/eventLocation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:textColor="#757575"
-        android:textSize="14sp"
-        tools:text="Grand Hall, Campus" />
-
-    <!-- Capacity -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <View
-            android:id="@+id/capacityIndicator"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/circle_indicator"
-            tools:backgroundTint="#4CAF50" />
-
-        <TextView
-            android:id="@+id/eventCapacity"
-            android:layout_width="wrap_content"
+        <!-- Event title -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#9E9E9E"
-            android:textSize="13sp"
-            tools:text="42 / 150 spots remaining" />
+            android:layout_marginBottom="6dp">
 
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/eventStatusLabel"
+                android:textColor="#212121"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Annual Tech Symposium" />
+
+            <TextView
+                android:id="@+id/eventStatusLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="#757575"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="TODAY"
+                tools:visibility="visible" />
+        </RelativeLayout>
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/eventDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="#757575"
+            android:textSize="14sp"
+            tools:text="Fri, Oct 24, 2024 at 10:00 AM" />
+
+        <!-- Location -->
+        <TextView
+            android:id="@+id/eventLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="#757575"
+            android:textSize="14sp"
+            tools:text="Grand Hall, Campus" />
+
+        <!-- Capacity -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/capacityIndicator"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/circle_indicator"
+                tools:backgroundTint="#4CAF50" />
+
+            <TextView
+                android:id="@+id/eventCapacity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp"
+                tools:text="42 / 150 spots remaining" />
+
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+    <!-- Favorite icon at the bottom right corner -->
+    <ImageView
+        android:id="@+id/favoriteIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:contentDescription="Toggle Favorite"
+        android:src="@drawable/ic_heart_outline" />
+
+</RelativeLayout>

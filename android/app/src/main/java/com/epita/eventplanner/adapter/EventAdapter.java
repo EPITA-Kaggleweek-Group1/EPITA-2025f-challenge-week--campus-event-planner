@@ -79,6 +79,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         updateStatusLabel(b, event);
         updateCapacityIndicator(b, event);
+        updateFavoriteIcon(b, event);
 
         // Default state (Light)
         resetToDefaultState(holder);
@@ -118,28 +119,37 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private void updateStatusLabel(ItemEventBinding b, Event event) {
         String date = event.getDate();
-        View label = b.eventTextInclude.eventStatusLabel;
         android.widget.TextView textView = b.eventTextInclude.eventStatusLabel;
 
         if (DateUtils.isPast(date)) {
-            label.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.VISIBLE);
             textView.setText(R.string.status_passed);
             textView.setBackgroundColor(Color.parseColor("#757575")); // Gray
         } else if (DateUtils.isToday(date)) {
-            label.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.VISIBLE);
             textView.setText(R.string.status_today);
             textView.setBackgroundColor(Color.parseColor("#F44336")); // Red
         } else if (DateUtils.isThisWeek(date)) {
-            label.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.VISIBLE);
             textView.setText(R.string.status_week);
             textView.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
         } else if (DateUtils.isThisMonth(date)) {
-            label.setVisibility(View.VISIBLE);
+            textView.setVisibility(View.VISIBLE);
             textView.setText(R.string.status_month);
             textView.setBackgroundColor(Color.parseColor("#4CAF50")); // Green
         } else {
-            label.setVisibility(View.GONE);
+            textView.setVisibility(View.GONE);
         }
+    }
+
+    private void updateFavoriteIcon(ItemEventBinding b, Event event) {
+        b.eventTextInclude.favoriteIcon.setImageResource(
+                event.isFavorite() ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
+        );
+        b.eventTextInclude.favoriteIcon.setOnClickListener(v -> {
+            event.setFavorite(!event.isFavorite());
+            updateFavoriteIcon(b, event);
+        });
     }
 
     private void updateCapacityIndicator(ItemEventBinding b, Event event) {
