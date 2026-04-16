@@ -180,7 +180,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void updateFavoriteIcon(int id) {
         boolean isFav = favoritesManager.isFavorite(id);
         binding.eventDetailContent.detailFavoriteIcon.setImageResource(
-                isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
+                isFav ? R.drawable.ic_heart_pink_filled : R.drawable.ic_heart_outline
         );
         binding.eventDetailContent.detailFavoriteIcon.setOnClickListener(v -> {
             favoritesManager.toggleFavorite(id);

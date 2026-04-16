@@ -148,7 +148,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private void updateFavoriteIcon(ItemEventBinding b, Event event) {
         boolean isFav = favoritesManager.isFavorite(event.getId());
         b.eventTextInclude.favoriteIcon.setImageResource(
-                isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline
+                isFav ? R.drawable.ic_heart_pink_filled : R.drawable.ic_heart_outline
         );
         b.eventTextInclude.favoriteIcon.setOnClickListener(v -> {
             favoritesManager.toggleFavorite(event.getId());

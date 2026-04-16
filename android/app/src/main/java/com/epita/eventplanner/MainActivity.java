@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private int currentOffset = 0;
     private boolean isLoading = false;
     private boolean hasMore = true;
+    private boolean isShowingFavorites = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +54,21 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         setContentView(binding.getRoot());
 
         binding.swipeRefreshLayout.setOnRefreshListener(() -> {
-            resetPagination();
-            loadEvents(currentQuery, dateFrom, dateTo);
+            if (isShowingFavorites) {
+                loadFavorites(dateFrom, dateTo);
+            } else {
+                resetPagination();
+                loadEvents(currentQuery, dateFrom, dateTo);
+            }
         });
         binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_events)));
         binding.errorLayout.retryButton.setOnClickListener(v -> {
-            resetPagination();
-            loadEvents(currentQuery, dateFrom, dateTo);
+            if (isShowingFavorites) {
+                loadFavorites(dateFrom, dateTo);
+            } else {
+                resetPagination();
+                loadEvents(currentQuery, dateFrom, dateTo);
+            }
         });
 
         favoritesManager = new FavoritesManager(this);
@@ -89,12 +98,98 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
 
         setupSearch();
         setupFilters();
+        setupBottomNavigation();
         
         // Initialize dateFrom to today for the default "All" filter
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         dateFrom = df.format(Calendar.getInstance().getTime());
         
         loadEvents("", dateFrom, "");
+    }
+
+    private void setupBottomNavigation() {
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_events) {
+                isShowingFavorites = false;
+                binding.searchEditText.setVisibility(View.VISIBLE);
+                resetPagination();
+                loadEvents(currentQuery, dateFrom, dateTo);
+                return true;
+            } else if (id == R.id.nav_favorites) {
+                isShowingFavorites = true;
+                binding.searchEditText.setVisibility(View.GONE);
+                loadFavorites(dateFrom, dateTo);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void loadFavorites(String from, String to) {
+        showLoading();
+        new Thread(() -> {
+            try {
+                // Determine if we need to filter out past events
+                boolean filterOutPast = true;
+                if (to != null && !to.isEmpty()) {
+                    Calendar cal = Calendar.getInstance();
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    String today = df.format(cal.getTime());
+                    if (to.equals(today) && (from == null || from.isEmpty())) {
+                        filterOutPast = false;
+                    }
+                }
+
+                // In a real app, we would have a dedicated favorites endpoint with filters.
+                // For now, we fetch a large batch and filter locally.
+                String json = ApiClient.fetchJson("/events?limit=200");
+                JSONObject responseObj = new JSONObject(json);
+                JSONArray array = responseObj.getJSONArray("data");
+                
+                List<Event> favorites = new ArrayList<>();
+                for (int i = 0; i < array.length(); i++) {
+                    Event event = Event.fromJson(array.getJSONObject(i));
+                    
+                    // Filter 1: Must be favorite
+                    if (!favoritesManager.isFavorite(event.getId())) {
+                        continue;
+                    }
+
+                    // Filter 2: Must match date range
+                    if (!DateUtils.isInRange(event.getDate(), from, to)) {
+                        continue;
+                    }
+                    
+                    // Filter 3: Apply "All" filter logic (hide past events unless explicitly requested)
+                    if (filterOutPast && DateUtils.isPast(event.getDate())) {
+                        continue;
+                    }
+
+                    try {
+                        String countResponse = ApiClient.fetchJson("/events/" + event.getId() + "/registrations/count");
+                        JSONObject countObject = new JSONObject(countResponse);
+                        event.setRegistrationCount(countObject.getInt("count"));
+                    } catch (Exception ignored) {}
+                    
+                    favorites.add(event);
+                }
+
+                runOnUiThread(() -> {
+                    adapter.setEvents(favorites);
+                    binding.emptyStateText.setVisibility(favorites.isEmpty() ? View.VISIBLE : View.GONE);
+                    showContent();
+                    binding.swipeRefreshLayout.setRefreshing(false);
+                    hasMore = false; 
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load favorites", e);
+                runOnUiThread(() -> {
+                    showError();
+                    binding.swipeRefreshLayout.setRefreshing(false);
+                });
+            }
+        }).start();
     }
 
     private void resetPagination() {
@@ -131,8 +226,13 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
                 dateFrom = today;
                 dateTo = "";
             }
-            resetPagination();
-            loadEvents(currentQuery, dateFrom, dateTo);
+            
+            if (isShowingFavorites) {
+                loadFavorites(dateFrom, dateTo);
+            } else {
+                resetPagination();
+                loadEvents(currentQuery, dateFrom, dateTo);
+            }
         });
     }
 
