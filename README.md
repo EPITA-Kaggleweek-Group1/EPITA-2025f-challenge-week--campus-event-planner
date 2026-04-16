@@ -314,116 +314,116 @@ Create a new registration
 
 ### Core (01-15)
 
-| Code      | TODO                                                              |
-| --------- | ----------------------------------------------------------------- |
-| CEPN-S001 | [API] Add capacity + image_url to events table                    |
-| CEPN-S002 | [API] GET /events returns all fields incl. capacity, image_url    |
-| CEPN-S003 | [API] GET /events/:id returns single event, 404 if not found      |
-| CEPN-S004 | [Mobile] Detail screen: call GET /events/:id on load              |
-| CEPN-S005 | [Mobile] Parse JSON, populate title, description, location, image |
-| CEPN-S006 | [Mobile] Format date as human-readable                            |
-| CEPN-S007 | [Mobile] Loading spinner + error view with retry                  |
-| CEPN-S008 | [API] Create registrations table (id, event_id, user_name, email) |
-| CEPN-S009 | [API] POST /events/:id/registrations with validation              |
-| CEPN-S010 | [API] Check capacity vs count, return 409 if full                 |
-| CEPN-S011 | [API] On success insert + return 201                              |
-| CEPN-S012 | [Mobile] Register button on detail screen                         |
-| CEPN-S013 | [Mobile] Form dialog: name + email fields                         |
-| CEPN-S014 | [Mobile] Client-side validation, inline errors                    |
-| CEPN-S015 | [Mobile] POST on submit, success toast, error handling            |
+| Code      | TODO                                                              | Status |
+| --------- | ----------------------------------------------------------------- | ------ |
+| CEPN-S001 | [API] Add capacity + image_url to events table                    | ✅      |
+| CEPN-S002 | [API] GET /events returns all fields incl. capacity, image_url    | ✅      |
+| CEPN-S003 | [API] GET /events/:id returns single event, 404 if not found      | ✅      |
+| CEPN-S004 | [Mobile] Detail screen: call GET /events/:id on load              | ✅      |
+| CEPN-S005 | [Mobile] Parse JSON, populate title, description, location, image | ✅      |
+| CEPN-S006 | [Mobile] Format date as human-readable                            | ✅      |
+| CEPN-S007 | [Mobile] Loading spinner + error view with retry                  | ✅      |
+| CEPN-S008 | [API] Create registrations table (id, event_id, user_name, email) | ✅      |
+| CEPN-S009 | [API] POST /events/:id/registrations with validation              | ✅      |
+| CEPN-S010 | [API] Check capacity vs count, return 409 if full                 | ✅      |
+| CEPN-S011 | [API] On success insert + return 201                              | ✅      |
+| CEPN-S012 | [Mobile] Register button on detail screen                         | ✅      |
+| CEPN-S013 | [Mobile] Form dialog: name + email fields                         | ✅      |
+| CEPN-S014 | [Mobile] Client-side validation, inline errors                    | ✅      |
+| CEPN-S015 | [Mobile] POST on submit, success toast, error handling            | ✅      |
 
 ### Intermediate (16-25)
 
-| Code      | TODO                                                |
-| --------- | --------------------------------------------------- |
-| CEPN-S016 | [API] GET /events/:id/registrations/count           |
-| CEPN-S017 | [Mobile] Display 'X/Y spots remaining'              |
-| CEPN-S018 | [Mobile] Color remaining: green/orange/red/gray     |
-| CEPN-S019 | [Mobile] Disable Register when full                 |
-| CEPN-S020 | [Mobile] Availability indicator on list cards       |
-| CEPN-S021 | [API] Search param on GET /events (LIKE title/desc) |
-| CEPN-S022 | [API] date_from/date_to params                      |
-| CEPN-S023 | [API] Combine search + date filters, ORDER BY date  |
-| CEPN-S024 | [Mobile] Search bar with 300ms debounce             |
-| CEPN-S025 | [Mobile] Date filter chips: Today/Week/Month/All    |
+| Code      | TODO                                                | Status |
+| --------- | --------------------------------------------------- | ------ |
+| CEPN-S016 | [API] GET /events/:id/registrations/count           | ✅      |
+| CEPN-S017 | [Mobile] Display 'X/Y spots remaining'              | ✅      |
+| CEPN-S018 | [Mobile] Color remaining: green/orange/red/gray     | ✅      |
+| CEPN-S019 | [Mobile] Disable Register when full                 | ✅      |
+| CEPN-S020 | [Mobile] Availability indicator on list cards       | ✅      |
+| CEPN-S021 | [API] Search param on GET /events (LIKE title/desc) | ✅      |
+| CEPN-S022 | [API] date_from/date_to params                      | ✅      |
+| CEPN-S023 | [API] Combine search + date filters, ORDER BY date  |        |
+| CEPN-S024 | [Mobile] Search bar with 300ms debounce             |        |
+| CEPN-S025 | [Mobile] Date filter chips: Today/Week/Month/All    |        |
 
 ### Advanced (26-35)
 
-| Code      | TODO                                                       |
-| --------- | ---------------------------------------------------------- |
+| Code      | TODO                                                       | Status |
+| --------- | ---------------------------------------------------------- | ------ |
 | CEPN-S026 | [Mobile] 'No events found' empty state                     |
-| CEPN-S027 | [Mobile] Favorite icon on cards + detail                   |
-| CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) |
-| CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              |
-| CEPN-S030 | [Mobile] Favorites screen in navigation                    |
-| CEPN-S031 | [Mobile] Favorites persist across restart                  |
-| CEPN-S032 | [API] Pagination: page + limit params, total_count         |
-| CEPN-S033 | [Mobile] Infinite scroll with loading indicator            |
-| CEPN-S034 | [Mobile] Pull-to-refresh on event list                     |
+| CEPN-S027 | [Mobile] Favorite icon on cards + detail                   |        |
+| CEPN-S028 | [Mobile] Store favorites locally (SharedPref/UserDefaults) |        |
+| CEPN-S029 | [Mobile] Toggle favorite, filled/outline icon              |        |
+| CEPN-S030 | [Mobile] Favorites screen in navigation                    |        |
+| CEPN-S031 | [Mobile] Favorites persist across restart                  |        |
+| CEPN-S032 | [API] Pagination: page + limit params, total_count         |        |
+| CEPN-S033 | [Mobile] Infinite scroll with loading indicator            | ✅      |
+| CEPN-S034 | [Mobile] Pull-to-refresh on event list                     | ✅      |
 | CEPN-S035 | [Mobile] Event image thumbnails + placeholder              |
 
 ### Polish (36-40)
 
-| Code      | TODO                                             |
-| --------- | ------------------------------------------------ |
-| CEPN-S036 | [Mobile] Share button (title + date + location)  |
-| CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          |
-| CEPN-S038 | [Mobile] Location as secondary text on cards     |
-| CEPN-S039 | [Mobile] Past Events section/toggle              |
-| CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape |
+| Code      | TODO                                             | Status |
+| --------- | ------------------------------------------------ | ------ |
+| CEPN-S036 | [Mobile] Share button (title + date + location)  |        |
+| CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          |        |
+| CEPN-S038 | [Mobile] Location as secondary text on cards     |        |
+| CEPN-S039 | [Mobile] Past Events section/toggle              |        |
+| CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape |        |
 
 ## CS TODOs (30)
 
 
 ### Threat Modeling (C001-C006)
 
-| Code      | TODO                                                   |
-| --------- | ------------------------------------------------------ |
-| CEPN-C001 | Architecture diagram + data flows + trust boundaries   |
-| CEPN-C002 | Endpoint inventory (method, inputs, auth, sensitivity) |
-| CEPN-C003 | STRIDE analysis on main flow                           |
-| CEPN-C004 | Attack surface mapping (all untrusted inputs)          |
-| CEPN-C005 | Attack tree (3+ paths, AND/OR nodes)                   |
-| CEPN-C006 | 1-page threat assessment (top 5 risks)                 |
+| Code      | TODO                                                   | Status |
+| --------- | ------------------------------------------------------ | ------ |
+| CEPN-C001 | Architecture diagram + data flows + trust boundaries   | ✅      |
+| CEPN-C002 | Endpoint inventory (method, inputs, auth, sensitivity) | ?      |
+| CEPN-C003 | STRIDE analysis on main flow                           | ?      |
+| CEPN-C004 | Attack surface mapping (all untrusted inputs)          | ?      |
+| CEPN-C005 | Attack tree (3+ paths, AND/OR nodes)                   | ?      |
+| CEPN-C006 | 1-page threat assessment (top 5 risks)                 | ?      |
 
 ### Code Review / Bug Bounty (C007-C016)
 
-| Code      | TODO                                      |
-| --------- | ----------------------------------------- |
-| CEPN-C007 | Find SQL Injection (CWE-89)               |
-| CEPN-C008 | Find Stored XSS (CWE-79)                  |
-| CEPN-C009 | Find IDOR (CWE-639)                       |
-| CEPN-C010 | Find hardcoded secrets (CWE-798)          |
-| CEPN-C011 | Find weak password hashing (CWE-328)      |
-| CEPN-C012 | Audit missing authentication (CWE-306)    |
-| CEPN-C013 | Analyze CORS configuration                |
-| CEPN-C014 | Find debug mode exposure (CWE-489)        |
-| CEPN-C015 | Review error handling (CWE-209)           |
-| CEPN-C016 | Audit SE teammates' code (2+ bug reports) |
+| Code      | TODO                                      | Status |
+| --------- | ----------------------------------------- | ------ |
+| CEPN-C007 | Find SQL Injection (CWE-89)               | ✅ 🚧    |
+| CEPN-C008 | Find Stored XSS (CWE-79)                  | 🚧      |
+| CEPN-C009 | Find IDOR (CWE-639)                       | 🚧      |
+| CEPN-C010 | Find hardcoded secrets (CWE-798)          | 🚧      |
+| CEPN-C011 | Find weak password hashing (CWE-328)      | 🚧      |
+| CEPN-C012 | Audit missing authentication (CWE-306)    | 🚧      |
+| CEPN-C013 | Analyze CORS configuration                | 🚧      |
+| CEPN-C014 | Find debug mode exposure (CWE-489)        | 🚧      |
+| CEPN-C015 | Review error handling (CWE-209)           | 🚧      |
+| CEPN-C016 | Audit SE teammates' code (2+ bug reports) | 🚧      |
 
 ### Security Testing (C017-C024)
 
-| Code      | TODO                                                 |
-| --------- | ---------------------------------------------------- |
-| CEPN-C017 | SQLi exploit script                                  |
-| CEPN-C018 | XSS exploit (3 payloads)                             |
-| CEPN-C019 | IDOR enumeration script                              |
-| CEPN-C020 | Rate limit / DoS test                                |
-| CEPN-C021 | Automated scan (nmap + Python)                       |
-| CEPN-C022 | API fuzzer                                           |
-| CEPN-C023 | Project-specific exploit (Werkzeug/pickle/CSRF/etc.) |
-| CEPN-C024 | test_security.py (8+ pytest cases)                   |
+| Code      | TODO                                                 | Status |
+| --------- | ---------------------------------------------------- | ------ |
+| CEPN-C017 | SQLi exploit script                                  |        |
+| CEPN-C018 | XSS exploit (3 payloads)                             |        |
+| CEPN-C019 | IDOR enumeration script                              |        |
+| CEPN-C020 | Rate limit / DoS test                                |        |
+| CEPN-C021 | Automated scan (nmap + Python)                       |        |
+| CEPN-C022 | API fuzzer                                           |        |
+| CEPN-C023 | Project-specific exploit (Werkzeug/pickle/CSRF/etc.) |        |
+| CEPN-C024 | test_security.py (8+ pytest cases)                   |        |
 
 ### Deployment & Hardening (C025-C030)
 
-| Code      | TODO                                             |
-| --------- | ------------------------------------------------ |
-| CEPN-C025 | Fix SQL Injection (parameterized queries)        |
-| CEPN-C026 | Add authentication + fix IDOR                    |
-| CEPN-C027 | Secure configuration (debug, secrets, passwords) |
-| CEPN-C028 | Security headers + rate limiting                 |
-| CEPN-C029 | Structured logging + alerting                    |
-| CEPN-C030 | Final 5-page audit report                        |
+| Code      | TODO                                             | Status |
+| --------- | ------------------------------------------------ | ------ |
+| CEPN-C025 | Fix SQL Injection (parameterized queries)        |        |
+| CEPN-C026 | Add authentication + fix IDOR                    |        |
+| CEPN-C027 | Secure configuration (debug, secrets, passwords) |        |
+| CEPN-C028 | Security headers + rate limiting                 |        |
+| CEPN-C029 | Structured logging + alerting                    |        |
+| CEPN-C030 | Final 5-page audit report                        |        |
 
 ---
 ## PR Workflow
