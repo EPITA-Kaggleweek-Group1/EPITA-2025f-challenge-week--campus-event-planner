@@ -18,6 +18,7 @@ import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.databinding.ActivityMainBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
+import com.epita.eventplanner.util.FavoritesManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private ActivityMainBinding binding;
     private EventAdapter adapter;
+    private FavoritesManager favoritesManager;
     private Runnable searchRunnable;
     private String currentQuery = "";
     private String dateFrom = "";
@@ -60,9 +62,11 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
             loadEvents(currentQuery, dateFrom, dateTo);
         });
 
+        favoritesManager = new FavoritesManager(this);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         binding.eventsRecyclerView.setLayoutManager(layoutManager);
-        adapter = new EventAdapter(this);
+        adapter = new EventAdapter(this, favoritesManager);
         binding.eventsRecyclerView.setAdapter(adapter);
 
         binding.eventsRecyclerView.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
@@ -256,6 +260,15 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         binding.loadingSpinner.setVisibility(View.GONE);
         binding.errorLayout.errorView.setVisibility(View.VISIBLE);
         binding.mainContent.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the list to reflect any changes in favorite status from DetailActivity
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override
