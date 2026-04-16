@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,18 +14,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.epita.eventplanner.adapter.EventAdapter;
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.model.Event;
+import com.google.android.material.chip.ChipGroup;
 import org.json.JSONArray;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements EventAdapter.OnEventClickListener {
     private EventAdapter adapter;
     private EditText searchBar;
+    private ChipGroup filterChipGroup;
 
-    // Debounce variables
+    private List<Event> allEventsMasterList = new ArrayList<>();
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
-    private static final long DEBOUNCE_DELAY = 300; // 300ms
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,54 +39,93 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         setContentView(R.layout.activity_main);
 
         searchBar = findViewById(R.id.searchEditText);
+        filterChipGroup = findViewById(R.id.filterChipGroup);
         RecyclerView rv = findViewById(R.id.eventsRecyclerView);
+
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new EventAdapter(this);
         rv.setAdapter(adapter);
 
+        // Listen for Search changes
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // 1. Remove any existing scheduled search tasks
-                if (searchRunnable != null) {
-                    searchHandler.removeCallbacks(searchRunnable);
-                }
-
-                // 2. Schedule a new search task after 300ms
-                searchRunnable = () -> loadEvents(s.toString());
-                searchHandler.postDelayed(searchRunnable, DEBOUNCE_DELAY);
+                if (searchRunnable != null) searchHandler.removeCallbacks(searchRunnable);
+                searchRunnable = () -> applyFilters(); // Re-apply all filters
+                searchHandler.postDelayed(searchRunnable, 300);
             }
-
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Initial load (no query)
-        loadEvents("");
+        // Listen for Chip selection changes
+        filterChipGroup.setOnCheckedChangeListener((group, checkedId) -> applyFilters());
+
+        fetchAllEventsFromServer();
     }
 
-    private void loadEvents(String query) {
+    private void fetchAllEventsFromServer() {
         new Thread(() -> {
             try {
-                // S010: search functionality
-                String endpoint = query.isEmpty() ? "/events" : "/events?search=" + query;
-                String json = ApiClient.fetchJson(endpoint);
+                String json = ApiClient.fetchJson("/events");
                 JSONArray array = new JSONArray(json);
-                List<Event> events = new ArrayList<>();
+                allEventsMasterList.clear();
                 for (int i = 0; i < array.length(); i++) {
-                    events.add(Event.fromJson(array.getJSONObject(i)));
+                    allEventsMasterList.add(Event.fromJson(array.getJSONObject(i)));
                 }
-
-                // Update UI on main thread
-                runOnUiThread(() -> adapter.setEvents(events));
-
+                runOnUiThread(() -> adapter.setEvents(allEventsMasterList));
             } catch (Exception e) {
-                Log.e("API", "Error fetching events: ", e);
-                runOnUiThread(() ->
-                        Toast.makeText(MainActivity.this, "Connection Failed", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> Toast.makeText(this, "Connection Failed", Toast.LENGTH_SHORT).show());
             }
         }).start();
+    }
+
+    private void applyFilters() {
+        String query = searchBar.getText().toString().toLowerCase().trim();
+        int checkedChipId = filterChipGroup.getCheckedChipId();
+
+        List<Event> filteredList = allEventsMasterList.stream()
+                .filter(event -> matchesSearch(event, query))
+                .filter(event -> matchesDateFilter(event, checkedChipId))
+                .collect(Collectors.toList());
+
+        adapter.setEvents(filteredList);
+    }
+
+    private boolean matchesSearch(Event event, String query) {
+        if (query.isEmpty()) return true;
+        return event.getTitle().toLowerCase().contains(query) ||
+                event.getLocation().toLowerCase().contains(query);
+    }
+
+    private boolean matchesDateFilter(Event event, int chipId) {
+        if (chipId == R.id.chipAll) return true;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+            Date eventDate = sdf.parse(event.getDate());
+            if (eventDate == null) return true;
+
+            Calendar now = Calendar.getInstance();
+            Calendar eventCal = Calendar.getInstance();
+            eventCal.setTime(eventDate);
+
+            if (chipId == R.id.chipToday) {
+                return now.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        now.get(Calendar.DAY_OF_YEAR) == eventCal.get(Calendar.DAY_OF_YEAR);
+            }
+            else if (chipId == R.id.chipWeek) {
+                return now.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        now.get(Calendar.WEEK_OF_YEAR) == eventCal.get(Calendar.WEEK_OF_YEAR);
+            }
+            else if (chipId == R.id.chipMonth) {
+                return now.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        now.get(Calendar.MONTH) == eventCal.get(Calendar.MONTH);
+            }
+        } catch (Exception e) {
+            return true; // If date parsing fails, show the event anyway
+        }
+        return true;
     }
 
     @Override
@@ -89,14 +133,5 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         Intent intent = new Intent(this, EventDetailActivity.class);
         intent.putExtra("event_id", event.getId());
         startActivity(intent);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Clean up handler to prevent memory leaks
-        if (searchHandler != null && searchRunnable != null) {
-            searchHandler.removeCallbacks(searchRunnable);
-        }
     }
 }
