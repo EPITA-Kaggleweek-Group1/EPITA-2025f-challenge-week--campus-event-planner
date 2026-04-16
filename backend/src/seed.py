@@ -135,7 +135,90 @@ EVENTS = [
         "capacity": 50,
         "image_url": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600",
     },
+    {
+        "title": "Full Capacity Event",
+        "description": "This event is intentionally fully booked.",
+        "date": "2026-05-01T10:00:00",
+        "location": "Room X",
+        "capacity": 10,
+        "image_url": "",
+    },
+    {
+        "title": "Plenty Spots Event",
+        "description": "Should have more than 20 spots left.",
+        "date": "2026-05-02T10:00:00",
+        "location": "Room Y",
+        "capacity": 50,
+        "image_url": "",
+    },
+    {
+        "title": "Medium Spots Event",
+        "description": "Should have 5–10 spots left.",
+        "date": "2026-05-03T10:00:00",
+        "location": "Room Z",
+        "capacity": 30,
+        "image_url": "",
+    },
+    {
+        "title": "Almost Full Event",
+        "description": "Should have less than 5 spots left.",
+        "date": "2026-05-04T10:00:00",
+        "location": "Room W",
+        "capacity": 20,
+        "image_url": "",
+    },
 ]
+
+
+def seed_registrations():
+    """Seed registrations with different fill levels."""
+
+    conn = db.get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    total_inserted = 0  # <-- ADD
+
+    # Helper to fetch event by title
+    def get_event_id(title: str) -> int:
+        cursor.execute("SELECT id FROM events WHERE title = %s", (title,))
+        row = cursor.fetchone()
+        if not row:
+            raise RuntimeError(f"Event not found: {title}")
+        return row["id"]
+
+    def create_registrations(event_id: int, count: int):
+        nonlocal total_inserted  # <-- ADD
+        for i in range(count):
+            cursor.execute(
+                """
+                INSERT INTO registrations (event_id, user_name, email)
+                VALUES (%s, %s, %s)
+                """,
+                (
+                    event_id,
+                    f"User {event_id}-{i}",
+                    f"user{event_id}_{i}@test.com",
+                ),
+            )
+            total_inserted += 1  # <-- ADD
+
+    # --- FULL
+    create_registrations(get_event_id("Full Capacity Event"), 10)
+
+    # --- MANY SPOTS LEFT
+    create_registrations(get_event_id("Plenty Spots Event"), 20)
+
+    # --- MEDIUM
+    create_registrations(get_event_id("Medium Spots Event"), 22)
+
+    # --- ALMOST FULL
+    create_registrations(get_event_id("Almost Full Event"), 17)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print(f"Seeded {total_inserted} registrations.")
 
 
 def seed():
@@ -204,3 +287,4 @@ def seed_users():
 if __name__ == "__main__":
     seed()
     seed_users()
+    seed_registrations()
