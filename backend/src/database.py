@@ -50,7 +50,7 @@ class Database:
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 title VARCHAR(255) NOT NULL,
                 description TEXT,
-                date VARCHAR(30) NOT NULL,
+                date DATETIME NOT NULL,
                 location VARCHAR(255),
                 capacity INT NOT NULL DEFAULT 50,
                 image_url VARCHAR(1024),
