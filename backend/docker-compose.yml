@@ -10,21 +10,42 @@ services:
     environment:
       # Use the root password from your .env
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      
+
       # This creates the database on startup
       MYSQL_DATABASE: ${APP_DB_NAME}
-      
+
       # IMPORTANT: These lines create the 'app' user your script is looking for
       MYSQL_USER: ${APP_DB_USER}
       MYSQL_PASSWORD: ${APP_DB_PASSWORD}
-      
+
       # Allows root to connect from your host machine
       MYSQL_ROOT_HOST: "%"
+    healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+        interval: 5s
+        timeout: 5s
+        retries: 10
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init:/docker-entrypoint-initdb.d
+      - ./docker/sql-init:/docker-entrypoint-initdb.d
+  app:
+      build:
+        context: .
+        dockerfile: docker/app.Dockerfile
+      container_name: campus-app
+      restart: always
+      env_file:
+        - .env
+      depends_on:
+        mysql:
+          condition: service_healthy
+      ports:
+        - "5000:5000"
+      volumes:
+        - ./src:/app/src   # only in develpment for hot update
+      command: python src/app.py
 
 volumes:
   mysql_data:

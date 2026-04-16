@@ -7,7 +7,12 @@ Run once before starting the API:
     python seed.py
 """
 
-from database import init_db, get_db
+from config.config import get_app_db_config
+from database import Database
+
+
+db = Database(get_app_db_config())
+
 
 EVENTS = [
     {
@@ -135,8 +140,8 @@ EVENTS = [
 
 def seed():
     """Drop existing events and insert fresh seed data."""
-    init_db()
-    conn = get_db()
+    db.init_db()
+    conn = db.get_connection()
     cursor = conn.cursor()
 
     # Clear previous seed data (but keep the schema)
@@ -167,7 +172,7 @@ def seed():
 def seed_users():
     import hashlib
 
-    conn = get_db()
+    conn = db.get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -195,6 +200,7 @@ def seed_users():
     print(f"Seeded {len(users)} users.")
 
 
+# TODO: We need to add registration seed
 if __name__ == "__main__":
     seed()
     seed_users()

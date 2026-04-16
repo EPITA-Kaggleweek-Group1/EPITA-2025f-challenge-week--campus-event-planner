@@ -5,10 +5,23 @@ Thin data-access layer that wraps raw SQL queries and returns
 plain dictionaries ready for JSON serialization.
 """
 
-from typing import List
+from typing import Any, Dict, List
 
+from mysql.connector.abstracts import MySQLConnectionAbstract
+from mysql.connector.pooling import PooledMySQLConnection
 from mysql.connector.types import RowItemType
-from database import get_db
+
+
+class EventFullError(Exception):
+    pass
+
+
+class EventNotFoundError(Exception):
+    pass
+
+
+class AlreadyRegisteredError(Exception):
+    pass
 
 
 def _serialize_row(row):
@@ -22,14 +35,13 @@ def _serialize_row(row):
     return result
 
 
-def get_all_events() -> List[dict[str, RowItemType] | None]:
+def get_all_events(conn) -> List[dict[str, RowItemType] | None]:
     """
     Retrieve every event, ordered by date ascending.
 
     Returns:
         list[dict]: A list of event dictionaries.
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM events ORDER BY date ASC")
     rows = cursor.fetchall()
@@ -38,7 +50,7 @@ def get_all_events() -> List[dict[str, RowItemType] | None]:
     return [_serialize_row(r) for r in rows]
 
 
-def get_event_by_id(event_id: int) -> dict | None:
+def get_event_by_id(conn, event_id: int) -> dict | None:
     """
     Retrieve a single event by its primary key.
 
@@ -48,7 +60,6 @@ def get_event_by_id(event_id: int) -> dict | None:
     Returns:
         dict or None: The event dictionary, or None if not found.
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
     row = cursor.fetchone()
@@ -57,7 +68,7 @@ def get_event_by_id(event_id: int) -> dict | None:
     return _serialize_row(row)
 
 
-def create_event(data):
+def create_event(conn, data):
     """
     Insert a new event into the database.
 
@@ -68,7 +79,6 @@ def create_event(data):
     Returns:
         dict: The newly created event (including its generated id).
     """
-    conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
         """
@@ -91,3 +101,83 @@ def create_event(data):
     cursor.close()
     conn.close()
     return event
+
+
+def registration_get_all(conn, event_id: int):
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
+    event = cursor.fetchone()
+
+    if event is None:
+        return None
+
+    cursor.execute(
+        """
+        SELECT id, user_name, email, created_at
+        FROM registrations
+        WHERE event_id = %s
+        """,
+        (event_id,),
+    )
+    registrations = cursor.fetchall()
+
+    cursor.close()
+    return [_serialize_row(r) for r in registrations]
+
+
+# TODO: This code need refactory. We need to fix the type checker error
+# Create wrapper for Registration and Event Models.
+def registration_create(
+    conn: MySQLConnectionAbstract | PooledMySQLConnection, event_id, data
+):
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        conn.start_transaction()
+        cursor.execute(
+            "SELECT id, capacity FROM events WHERE id = %s FOR UPDATE", (event_id,)
+        )
+        event = cursor.fetchone()
+        if not event:
+            raise EventNotFoundError()
+
+        # TODO: We need to have wrapper
+        event_capacity = event["capacity"]  # type: ignore
+        cursor.execute(
+            "SELECT COUNT(*) AS count FROM registrations WHERE event_id = %s",
+            (event_id,),
+        )
+
+        row = cursor.fetchone()
+        if row is None:
+            # TODO: Make this into an error.
+            raise RuntimeError("COUNT query returned no result")
+        registration_count = row["count"]  # type: ignore
+
+        if registration_count >= event_capacity:
+            raise EventFullError()
+
+        cursor.execute(
+            """
+            INSERT INTO registrations (event_id, user_name, email)
+            VALUES (%s, %s, %s)
+        """,
+            (event_id, data["user_name"], data["email"]),
+        )
+
+        new_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM registrations WHERE id = %s", (new_id,))
+        registration = _serialize_row(cursor.fetchone())
+
+        conn.commit()
+        return registration
+
+    except Exception as e:
+        conn.rollback()
+        if "Duplicate entry" in str(e):
+            raise AlreadyRegisteredError()
+        raise
+
+    finally:
+        cursor.close()
