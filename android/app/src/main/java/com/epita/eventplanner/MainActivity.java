@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnEv
         binding.errorLayout.errorView.setVisibility(View.VISIBLE);
         binding.mainContent.setVisibility(View.GONE);
     }
-
+ 
     @Override
     public void onEventClick(Event event) {
         Intent intent = new Intent(this, EventDetailActivity.class);

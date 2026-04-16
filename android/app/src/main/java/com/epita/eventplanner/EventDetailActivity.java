@@ -5,11 +5,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.epita.eventplanner.api.ApiClient;
 import com.epita.eventplanner.databinding.ActivityEventDetailBinding;
+import com.epita.eventplanner.databinding.DialogRegisterBinding;
 import com.epita.eventplanner.model.Event;
 import com.epita.eventplanner.util.DateUtils;
 
@@ -28,9 +30,14 @@ public class EventDetailActivity extends AppCompatActivity {
 
         eventId = getIntent().getIntExtra("event_id", -1);
 
-        binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_details)));
-        binding.swipeRefreshLayout.setOnRefreshListener(() -> loadEventDetails(eventId));
-        binding.errorLayout.retryButton.setOnClickListener(v -> loadEventDetails(eventId));
+        binding.errorLayout.errorMessage.setText(getString(
+                R.string.error_load_failed, getString(R.string.type_details)));
+        binding.swipeRefreshLayout.setOnRefreshListener(
+                () -> loadEventDetails(eventId));
+        binding.errorLayout.retryButton.setOnClickListener(
+                v -> loadEventDetails(eventId));
+
+        binding.registerButton.setOnClickListener(v -> showRegisterDialog());
 
         if (eventId != -1) {
             loadEventDetails(eventId);
@@ -56,13 +63,60 @@ public class EventDetailActivity extends AppCompatActivity {
                     showContent();
                     binding.swipeRefreshLayout.setRefreshing(false);
                 });
-
             } catch (Exception e) {
                 Log.e(TAG, "Failed to load event details", e);
                 runOnUiThread(() -> {
                     showError();
                     binding.swipeRefreshLayout.setRefreshing(false);
                 });
+            }
+        }).start();
+    }
+
+    private void showRegisterDialog() {
+        DialogRegisterBinding dialogBinding = DialogRegisterBinding.inflate(getLayoutInflater());
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.register_title)
+                .setView(dialogBinding.getRoot())
+                .setPositiveButton(R.string.submit, (dialog, which) -> {
+                    String name = dialogBinding.editName.getText().toString();
+                    String email = dialogBinding.editEmail.getText().toString();
+                    if (!name.isEmpty() && !email.isEmpty()) {
+                        submitRegistration(name, email);
+                    } else {
+                        Toast.makeText(this, R.string.error_fill_fields, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void submitRegistration(String name, String email) {
+        new Thread(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("user_name", name);
+                json.put("email", email);
+
+                ApiClient.postJson("/events/" + eventId + "/register", json.toString());
+
+                runOnUiThread(() -> Toast.makeText(this, R.string.registration_success, Toast.LENGTH_LONG).show());
+            } catch (ApiClient.ApiException e) {
+                Log.e(TAG, "Registration failed", e);
+                String message = e.getResponseBody();
+                try {
+                    JSONObject errorJson = new JSONObject(message);
+                    if (errorJson.has("error")) {
+                        message = errorJson.getString("error");
+                    }
+                } catch (Exception ignored) {}
+                
+                final String displayMessage = message;
+                runOnUiThread(() -> Toast.makeText(this, getString(R.string.registration_failed) + ": " + displayMessage, Toast.LENGTH_LONG).show());
+            } catch (Exception e) {
+                Log.e(TAG, "Registration failed", e);
+                runOnUiThread(() -> Toast.makeText(this, R.string.registration_failed, Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
@@ -88,9 +142,12 @@ public class EventDetailActivity extends AppCompatActivity {
     private void populateUI(Event event) {
         binding.eventDetailContent.detailTitle.setText(event.getTitle());
         binding.eventDetailContent.detailLocation.setText(event.getLocation());
-        binding.eventDetailContent.detailDescription.setText(event.getDescription());
-        binding.eventDetailContent.detailCapacity.setText(getString(R.string.capacity_format, event.getCapacity()));
-        binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
+        binding.eventDetailContent.detailDescription.setText(
+                event.getDescription());
+        binding.eventDetailContent.detailCapacity.setText(
+                getString(R.string.capacity_format, event.getCapacity()));
+        binding.eventDetailContent.detailDate.setText(
+                DateUtils.formatToHuman(event.getDate()));
 
         String imageUrl = event.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {

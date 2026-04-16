@@ -11,4 +11,13 @@
     <string name="register_event">Register for Event</string>
     <string name="content_desc_event_image">Event Image</string>
     <string name="capacity_format">Capacity: %1$d</string>
+    <string name="register_title">Register</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="error_fill_fields">Please fill all fields</string>
+    <string name="registration_success">Registration Successful!</string>
+    <string name="registration_failed">Registration Failed</string>
+    <string name="registration_header">Event Registration</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_email">Email Address</string>
 </resources>
