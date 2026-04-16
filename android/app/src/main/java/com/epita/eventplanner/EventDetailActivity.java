@@ -28,14 +28,14 @@ public class EventDetailActivity extends AppCompatActivity {
 
         eventId = getIntent().getIntExtra("event_id", -1);
 
-        binding.errorLayout.errorMessage.setText("Failed to load event details");
+        binding.errorLayout.errorMessage.setText(getString(R.string.error_load_failed, getString(R.string.type_details)));
         binding.swipeRefreshLayout.setOnRefreshListener(() -> loadEventDetails(eventId));
         binding.errorLayout.retryButton.setOnClickListener(v -> loadEventDetails(eventId));
 
         if (eventId != -1) {
             loadEventDetails(eventId);
         } else {
-            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_event_not_found), Toast.LENGTH_SHORT).show();
             finish();
         }
     }
@@ -69,10 +69,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void showLoading() {
         binding.loadingSpinner.setVisibility(View.VISIBLE);
-        binding.errorLayout.errorView.setVisibility(View.VISIBLE);
-        binding.actualContent.setVisibility(View.GONE);
-        // Note: We hide error view specifically if we are loading
         binding.errorLayout.errorView.setVisibility(View.GONE);
+        binding.actualContent.setVisibility(View.GONE);
     }
 
     private void showContent() {
@@ -88,15 +86,10 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void populateUI(Event event) {
-        // Accessing views through the included layout_event_detail_content
-        // Note: the include in activity_event_detail doesn't have an ID, 
-        // but its views are merged if not using a bind-able include ID.
-        // Actually, it's better to give the include an ID or access views directly if they have IDs.
-        
         binding.eventDetailContent.detailTitle.setText(event.getTitle());
         binding.eventDetailContent.detailLocation.setText(event.getLocation());
         binding.eventDetailContent.detailDescription.setText(event.getDescription());
-        binding.eventDetailContent.detailCapacity.setText("Capacity: " + event.getCapacity());
+        binding.eventDetailContent.detailCapacity.setText(getString(R.string.capacity_format, event.getCapacity()));
         binding.eventDetailContent.detailDate.setText(DateUtils.formatToHuman(event.getDate()));
 
         String imageUrl = event.getImageUrl();

@@ -25,7 +25,7 @@
                 android:layout_margin="12dp"
                 android:background="@android:drawable/editbox_background"
                 android:drawablePadding="8dp"
-                android:hint="Search events..."
+                android:hint="@string/search_hint"
                 android:inputType="text"
                 android:padding="16dp" />
 
