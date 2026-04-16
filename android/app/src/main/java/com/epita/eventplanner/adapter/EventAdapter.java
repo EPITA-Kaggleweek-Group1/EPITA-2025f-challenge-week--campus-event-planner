@@ -143,7 +143,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             textView.setBackgroundColor(Color.parseColor("#F44336")); // Red
         } else if (DateUtils.isThisWeek(date)) {
             textView.setVisibility(View.VISIBLE);
-            textView.setText(R.string.status_week);
+            int days = DateUtils.getDaysUntil(date);
+            if (days == 1) {
+                textView.setText("IN 1 DAY");
+            } else {
+                textView.setText("IN " + days + " DAYS");
+            }
             textView.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
         } else if (DateUtils.isThisMonth(date)) {
             textView.setVisibility(View.VISIBLE);
