@@ -360,14 +360,14 @@ Create a new registration
 | CEPN-S032 | [API] Pagination: page + limit params, total_count         | ✅      |
 | CEPN-S033 | [Mobile] Infinite scroll with loading indicator            | ✅      |
 | CEPN-S034 | [Mobile] Pull-to-refresh on event list                     | ✅      |
-| CEPN-S035 | [Mobile] Event image thumbnails + placeholder              |        |
+| CEPN-S035 | [Mobile] Event image thumbnails + placeholder              | ✅      |
 
 ### Polish (36-40)
 
 | Code      | TODO                                             | Status |
 | --------- | ------------------------------------------------ | ------ |
 | CEPN-S036 | [Mobile] Share button (title + date + location)  |        |
-| CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          |        |
+| CEPN-S037 | [Mobile] Countdown ('Starts in 3 days')          | ✅      |
 | CEPN-S038 | [Mobile] Location as secondary text on cards     | ✅      |
 | CEPN-S039 | [Mobile] Past Events section/toggle              | ✅      |
 | CEPN-S040 | [Mobile] Final polish: spacing, fonts, landscape |        |

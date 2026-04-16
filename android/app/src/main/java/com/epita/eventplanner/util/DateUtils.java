@@ -71,6 +71,27 @@ public class DateUtils {
         return date.after(now.getTime()) && date.before(monthLater.getTime());
     }
 
+    public static int getDaysUntil(String dateStr) {
+        Date date = parse(dateStr);
+        if (date == null) return -1;
+        
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+
+        Calendar target = Calendar.getInstance();
+        target.setTime(date);
+        target.set(Calendar.HOUR_OF_DAY, 0);
+        target.set(Calendar.MINUTE, 0);
+        target.set(Calendar.SECOND, 0);
+        target.set(Calendar.MILLISECOND, 0);
+
+        long diff = target.getTimeInMillis() - today.getTimeInMillis();
+        return (int) (diff / (24 * 60 * 60 * 1000));
+    }
+
     public static boolean isInRange(String dateStr, String from, String to) {
         Date eventDate = parse(dateStr);
         if (eventDate == null) return false;
