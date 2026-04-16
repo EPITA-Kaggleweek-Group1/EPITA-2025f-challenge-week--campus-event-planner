@@ -76,6 +76,22 @@
                     android:textStyle="bold"
                     android:visibility="gone"
                     tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/eventPassedNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:background="#EEEEEE"
+                    android:padding="16dp"
+                    android:text="@string/event_passed"
+                    android:textColor="#757575"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
             </LinearLayout>
 
         </RelativeLayout>

@@ -63,6 +63,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 holder.itemView.getContext().getString(R.string.capacity_format_main, event.getRegistrationCount(), event.getCapacity())
         );
 
+        updateStatusLabel(b, event);
         updateCapacityIndicator(b, event);
 
         // Default state (Light)
@@ -99,6 +100,32 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 listener.onEventClick(event);
             }
         });
+    }
+
+    private void updateStatusLabel(ItemEventBinding b, Event event) {
+        String date = event.getDate();
+        View label = b.eventTextInclude.eventStatusLabel;
+        android.widget.TextView textView = b.eventTextInclude.eventStatusLabel;
+
+        if (DateUtils.isPast(date)) {
+            label.setVisibility(View.VISIBLE);
+            textView.setText(R.string.status_passed);
+            textView.setBackgroundColor(Color.parseColor("#757575")); // Gray
+        } else if (DateUtils.isToday(date)) {
+            label.setVisibility(View.VISIBLE);
+            textView.setText(R.string.status_today);
+            textView.setBackgroundColor(Color.parseColor("#F44336")); // Red
+        } else if (DateUtils.isThisWeek(date)) {
+            label.setVisibility(View.VISIBLE);
+            textView.setText(R.string.status_week);
+            textView.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
+        } else if (DateUtils.isThisMonth(date)) {
+            label.setVisibility(View.VISIBLE);
+            textView.setText(R.string.status_month);
+            textView.setBackgroundColor(Color.parseColor("#4CAF50")); // Green
+        } else {
+            label.setVisibility(View.GONE);
+        }
     }
 
     private void updateCapacityIndicator(ItemEventBinding b, Event event) {
