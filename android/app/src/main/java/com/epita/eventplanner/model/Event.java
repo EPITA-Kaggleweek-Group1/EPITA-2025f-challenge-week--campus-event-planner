@@ -19,6 +19,7 @@ public class Event {
     private int registrationCount;
     private String imageUrl;
     private String createdAt;
+    private boolean isFavorite;
 
     // ------------------------------------------------------------------ //
     //  Constructors
@@ -39,6 +40,7 @@ public class Event {
         e.capacity = json.optInt("capacity", 50);
         e.imageUrl = json.optString("image_url", "");
         e.createdAt = json.optString("created_at", "");
+        e.isFavorite = false; // Initialized as not favorite by default
         return e;
     }
 
@@ -72,4 +74,7 @@ public class Event {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public boolean isFavorite() { return isFavorite; }
+    public void setFavorite(boolean favorite) { isFavorite = favorite; }
 }
