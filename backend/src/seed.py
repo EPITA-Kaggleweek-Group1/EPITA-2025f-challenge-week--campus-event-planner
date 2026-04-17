@@ -253,7 +253,13 @@ def seed():
 
 
 def seed_users():
-    import hashlib
+    import bcrypt
+
+    def hash_password(plain: str) -> str:
+        return bcrypt.hashpw(
+            plain.encode("utf-8"),
+            bcrypt.gensalt(rounds=12)
+        ).decode("utf-8")
 
     conn = db.get_connection()
     cursor = conn.cursor()
@@ -268,9 +274,9 @@ def seed_users():
     """)
     cursor.execute("DELETE FROM users")
     users = [
-        ("admin", hashlib.md5(b"admin123").hexdigest(), "admin"),
-        ("alice", hashlib.md5(b"password").hexdigest(), "user"),
-        ("bob", hashlib.md5(b"bob2026").hexdigest(), "user"),
+        ("admin", hash_password("admin123"), "admin"),
+        ("alice", hash_password("password"), "user"),
+        ("bob",   hash_password("bob2026"),  "user"),
     ]
     for username, pw_hash, role in users:
         cursor.execute(

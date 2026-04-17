@@ -12,3 +12,6 @@ pluggy==1.6.0
 pytest==8.0.2
 python-dotenv==1.2.2
 Werkzeug==3.1.8
+flask-limiter==3.5.0
+bcrypt==4.1.2
+
