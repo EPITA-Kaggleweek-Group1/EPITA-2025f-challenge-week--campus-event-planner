@@ -11,7 +11,7 @@ Students must add:
     GET  /events/<id>/registrations   — list registrations / count
     GET  /events?search=&date=        — search & filter
 """
-
+import os
 import html
 from flask import jsonify, request
 from models import (
@@ -25,13 +25,35 @@ from models import (
     registration_get_count,
 )
 from service import service_filter_events, service_update_event
+from functools import wraps
+from extension import limiter
+from extension import logger
 
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get("X-API-Key", "")
+        if key != os.environ.get("ADMIN_API_KEY"):
+            logger.warning(
+                f"Unauthorized access attempt | "
+                f"ip={request.remote_addr} | "
+                f"method={request.method} | "
+                f"path={request.path}"
+            )
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 def register_events_routes(app):
+    
     @app.after_request
-    def add_header(response):
-        response.headers["X-Powered-By"] = "Flask/2.3.2 Python/3.11"
-        return response  # Allow cross-origin requests from the mobile apps
+    def add_security_headers(response):
+        response.headers.pop("X-Powered-By", None)
+        response.headers.pop("Server", None)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        return response
 
     # --------------------------------------------------------------------------- #
     #  Health check
@@ -47,6 +69,7 @@ def register_events_routes(app):
     # --------------------------------------------------------------------------- #
 
     @app.route("/events", methods=["GET"])
+    @limiter.limit("30 per minute")
     def list_events():
         """
         Return all events as JSON array.
@@ -103,6 +126,8 @@ def register_events_routes(app):
             conn.close()
 
     @app.route("/events", methods=["POST"])
+    @require_api_key
+    @limiter.limit("10 per minute")
     def add_event():
         """
         Create a new event.
@@ -118,6 +143,7 @@ def register_events_routes(app):
             return jsonify({"error": "'title' and 'date' are required"}), 400
 
         event = create_event(conn, data)
+        logger.info(f"Event created | ip={request.remote_addr} | id={event['id']} | title={event['title']}")
         conn.close()
         return jsonify(event), 201
 
@@ -128,6 +154,7 @@ def register_events_routes(app):
     #    GET  /events/<id>/registrations
     # ---------------------------------------------------------------------------
     @app.route("/events/<int:event_id>/registrations", methods=["GET"])
+    @require_api_key
     def get_event_registrations(event_id: int):
         """
         Return a list of registrations based on event ID.
@@ -145,6 +172,8 @@ def register_events_routes(app):
         return jsonify(registrations), 200
 
     @app.route("/events/<int:event_id>/register", methods=["POST"])
+    @require_api_key
+    @limiter.limit("5 per minute")
     def add_event_registration(event_id: int):
         """
         Create a new register.
@@ -165,6 +194,13 @@ def register_events_routes(app):
                 return jsonify({"error": "'user_name' and 'email' are required"}), 400
 
             result = registration_create(conn, event_id, data)
+            logger.info(
+                f"Registration created | "
+                f"ip={request.remote_addr} | "
+                f"event_id={event_id} | "
+                f"user={data['user_name']} | "
+                f"email={data['email']}"
+            )
             return jsonify(result), 201
         except EventNotFoundError:
             return jsonify({"error": "Event not found"}), 404
@@ -176,6 +212,7 @@ def register_events_routes(app):
             return jsonify({"error": "Internal server error"}), 500
         finally:
             conn.close()
+        
 
     @app.route("/events/<int:event_id>/registrations/count", methods=["GET"])
     def get_event_registration_count(event_id: int):
@@ -198,17 +235,27 @@ def register_events_routes(app):
     # --------------------------------------------------------------------------- #
 
     @app.route("/events/<int:event_id>/registrations", methods=["DELETE"])
+    @require_api_key
     def delete_registration(event_id):
         reg_id = request.args.get("reg_id")
         conn = app.db.get_connection()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM registrations WHERE id = %s", (reg_id,))
+        cursor.execute("DELETE FROM registrations WHERE id = %s AND event_id = %s", (reg_id, event_id)) #add event_id to fix IDOR
         conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Registration not found"}), 404
         cursor.close()
         conn.close()
+        logger.info(
+            f"Registration deleted | "
+            f"ip={request.remote_addr} | "
+            f"event_id={event_id} | "
+            f"reg_id={reg_id}"
+        )
         return jsonify({"message": "Registration deleted"}), 200
 
     @app.route("/admin")
+    @require_api_key
     def admin_page():
         conn = app.db.get_connection()
         cursor = conn.cursor(dictionary=True)
@@ -235,6 +282,7 @@ def register_events_routes(app):
         return html_content
 
     @app.route("/events/<int:event_id>", methods=["PATCH"])
+    @require_api_key
     def update_event(event_id):
         data = request.get_json() or {}
 

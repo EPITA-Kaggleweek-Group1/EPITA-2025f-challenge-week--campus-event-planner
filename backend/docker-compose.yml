@@ -20,6 +20,8 @@ services:
 
       # Allows root to connect from your host machine
       MYSQL_ROOT_HOST: "%"
+      # Disable flask debug
+      FLASK_DEBUG: "0"
     healthcheck:
         test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
         interval: 5s
